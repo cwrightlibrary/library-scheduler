@@ -1,6 +1,6 @@
 import csv
-from os.path import dirname, join, realpath
 from customtkinter import *
+from os.path import dirname, join, realpath
 
 class App(CTk):
 	def __init__(self):
