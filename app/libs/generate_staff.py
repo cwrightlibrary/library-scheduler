@@ -8,10 +8,10 @@ class Staff:
         with open(employee_csv, "r") as csv_file:
             reader = csv.DictReader(csv_file)
             self.staff_list = [row for row in reader]
-        for employee in range(len(self.staff_list)):
-            for data in range(len(self.staff_list[employee])):
-                if "hours" in self.staff_list[employee][data] or "break" in self.staff_list[employee][data]:
-                    self.staff_list[employee][data] = self.format_time(self.staff_list[employee][data])
+            for employee in self.staff_list:
+                for data in employee:
+                    if "hours" in data or "break" in data:
+                        employee[data] = self.format_time(employee[data])
     
     def format_time(self, input_time):
         output_time = input_time
@@ -134,4 +134,4 @@ for data in employee:
         employee[data] = format_time(employee[data])
     # print(employee[data])
 
-staff = Staff(join(dirname(realpath(__file__)), "employeeInformation.csv"))
+STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
