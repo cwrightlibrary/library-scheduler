@@ -2,63 +2,136 @@ import csv
 from datetime import datetime
 from os.path import dirname, join, realpath
 
-# Import the CSV with employee information
-def import_employee_csv(file):
-    with open(file, "r") as csv_file:
-        reader = csv.DictReader(csv_file)
-        data = [row for row in reader]
-    return data
-
-# To convert time between 12/24 hours
-def convert_time(input_time, to_24):
-    # Split the string into a list
-    output_time = input_time.split("-")
-    # Reformat the time for processing (if time is "9am", change to "9:00AM")
-    for t in range(len(output_time)):
-        if not ":" in output_time[t]:
-            output_time[t] = output_time[t][:-2] + ":00" + output_time[t][-2:]
-        # Change time to 24 hours
-        if to_24:
-            output_time[t] = datetime.strptime(output_time[t].upper(), "%I:%M%p").strftime("%H%M")
-        # Change time to 12 hours
+class Staff:
+    def __init__(self, employee_csv):
+        # Import the CSV with employee information
+        with open(employee_csv, "r") as csv_file:
+            reader = csv.DictReader(csv_file)
+            self.staff_list = [row for row in reader]
+        for employee in range(len(self.staff_list)):
+            for data in range(len(self.staff_list[employee])):
+                if "hours" in self.staff_list[employee][data] or "break" in self.staff_list[employee][data]:
+                    self.staff_list[employee][data] = self.format_time(self.staff_list[employee][data])
+    
+    def format_time(self, input_time):
+        output_time = input_time
+        if "(" in output_time:
+            output_time = output_time.split(")/(")
+            for h1 in range(len(output_time)):
+                output_time[h1] = output_time[h1].replace("(", "").replace(")", "")
+                if "/" in output_time[h1]:
+                    output_time[h1] = output_time[h1].split("/")
+        if "/" in output_time:
+            output_time = output_time.split("/")
+        if isinstance(output_time, list):
+            for h1 in range(len(output_time)):
+                if isinstance(output_time[h1], list):
+                    for h2 in range(len(output_time[h1])):
+                        if "am" in output_time[h1][h2].lower() or "pm" in output_time[h1][h2].lower():
+                            if not "Off" in output_time[h1][h2] or not "None" in output_time[h1][h2]:
+                                output_time[h1][h2] = output_time[h1][h2].split("-")
+                                if isinstance(output_time[h1][h2], list):
+                                    for h3 in range(len(output_time[h1][h2])):
+                                        if "am" in output_time[h1][h2][h3] or "pm" in output_time[h1][h2][h3]:
+                                            output_time[h1][h2][h3] = convert_time(output_time[h1][h2][h3], to_24=True)
+                                else:
+                                    if "am" in output_time[h1][h2] or "pm" in output_time[h1][h2]:
+                                        output_time[h1][h2] = convert_time(output_time[h1][h2], to_24=True)
+                else:
+                    if "am" in output_time[h1].lower() or "pm" in output_time[h1].lower():
+                        if not "Off" in output_time[h1] or not "None" in output_time[h1]:
+                            output_time[h1] = output_time[h1].split("-")
+                            for h2 in range(len(output_time[h1])):
+                                if "am" in output_time[h1][h2] or "pm" in output_time[h1][h2]:
+                                        output_time[h1][h2] = convert_time(output_time[h1][h2], to_24=True)
         else:
-            output_time[t] = datetime.strptime(output_time[t].upper(), "%H%M").strftime("%I:%M%p")
-    return output_time
-
-def split_hours(input_time):
-    if "(" in input_time:
-        output_time = input_time.split(")/(")
-        for shift in range(len(output_time)):
-            output_time[shift] = output_time[shift].replace("(", "").replace(")", "")
-            output_time[shift] = output_time[shift].split("/")
-            if "Off" in output_time[shift]:
-                output_time[shift] = "Off"
+            if "am" in output_time.lower() or "pm" in output_time.lower():
+                output_time = output_time.split("-")
+                if isinstance(output_time, list):
+                    for h1 in range(len(output_time)):
+                        if "am" in output_time[h1].lower() or "pm" in output_time[h1].lower():
+                            output_time[h1] = convert_time(output_time[h1], to_24=True)
+                else:
+                    if "am" in output_time.lower() or "pm" in output_time.lower():
+                        output_time = convert_time(output_time, to_24=True)
         return output_time
 
-employee_csv = import_employee_csv(join(dirname(realpath(__file__)), "employeeInformation.csv"))
+def convert_time(input_time, to_24):
+    output_time = input_time
+    if not ":" in output_time:
+        output_time = output_time[:-2] + ":00" + output_time[-2:]
+    if to_24:
+        output_time = datetime.strptime(output_time.upper(), "%I:%M%p").strftime("%H%M")
+    else:
+        output_time = datetime.strptime(output_time, "%H%M").strftime("%I:%M%p")
+    return output_time
 
-yami_monday_hours = employee_csv[5]["monday-hours"]
-print(yami_monday_hours)
-yami_monday_hours = split_hours(yami_monday_hours)
+# Working out formatting
+employee = {
+    "name": "Chris Wright",
+    "position": "Full-Time",
+    "sunday-hours": "Off/Off/2pm-6pm",
+    "monday-hours": "2pm-8pm",
+    "tuesday-hours": "9am-5:30pm",
+    "wednesday-hours": "9am-5:30pm",
+    "thursday-hours": "9am-5:30pm",
+    "friday-hours": "(9am-6pm/9am-6pm)/(Off/Off)/(2pm-6pm/2pm-6pm)",
+    "saturday-hours": "(Off/Off)/(9am-6pm/9am-6pm)/(Off/Off)",
+    "sunday-break": "None/None/None",
+    "monday-break": "5pm",
+    "tuesday-break": "1pm",
+    "wednesday-break": "12pm",
+    "thursday-break": "12pm",
+    "friday-break": "(12pm/12pm)/(None/None)/(None/None)",
+    "saturday-break": "(None/None)/(12pm/12pm)/(None/None)"
+}
 
-print(yami_monday_hours)
+def format_time(input_time):
+    output_time = input_time
+    if "(" in output_time:
+        output_time = output_time.split(")/(")
+        for h1 in range(len(output_time)):
+            output_time[h1] = output_time[h1].replace("(", "").replace(")", "")
+            if "/" in output_time[h1]:
+                output_time[h1] = output_time[h1].split("/")
+    if "/" in output_time:
+        output_time = output_time.split("/")
+    if isinstance(output_time, list):
+        for h1 in range(len(output_time)):
+            if isinstance(output_time[h1], list):
+                for h2 in range(len(output_time[h1])):
+                    if "am" in output_time[h1][h2].lower() or "pm" in output_time[h1][h2].lower():
+                        if not "Off" in output_time[h1][h2] or not "None" in output_time[h1][h2]:
+                            output_time[h1][h2] = output_time[h1][h2].split("-")
+                            if isinstance(output_time[h1][h2], list):
+                                for h3 in range(len(output_time[h1][h2])):
+                                    if "am" in output_time[h1][h2][h3] or "pm" in output_time[h1][h2][h3]:
+                                        output_time[h1][h2][h3] = convert_time(output_time[h1][h2][h3], to_24=True)
+                            else:
+                                if "am" in output_time[h1][h2] or "pm" in output_time[h1][h2]:
+                                    output_time[h1][h2] = convert_time(output_time[h1][h2], to_24=True)
+            else:
+                if "am" in output_time[h1].lower() or "pm" in output_time[h1].lower():
+                    if not "Off" in output_time[h1] or not "None" in output_time[h1]:
+                        output_time[h1] = output_time[h1].split("-")
+                        for h2 in range(len(output_time[h1])):
+                            if "am" in output_time[h1][h2] or "pm" in output_time[h1][h2]:
+                                    output_time[h1][h2] = convert_time(output_time[h1][h2], to_24=True)
+    else:
+        if "am" in output_time.lower() or "pm" in output_time.lower():
+            output_time = output_time.split("-")
+            if isinstance(output_time, list):
+                for h1 in range(len(output_time)):
+                    if "am" in output_time[h1].lower() or "pm" in output_time[h1].lower():
+                        output_time[h1] = convert_time(output_time[h1], to_24=True)
+            else:
+                if "am" in output_time.lower() or "pm" in output_time.lower():
+                    output_time = convert_time(output_time, to_24=True)
+    return output_time
 
-if isinstance(yami_monday_hours, list):
-    for shift in range(len(yami_monday_hours)):
-        if isinstance(yami_monday_hours[shift], list):
-            for hour in range(len(yami_monday_hours[shift])):
-                yami_monday_hours[shift][hour] = convert_time(yami_monday_hours[shift][hour], to_24=True)
-        else:
-            if not "Off" in yami_monday_hours[shift]:
-                yami_monday_hours[shift] = convert_time(yami_monday_hours[shift], to_24=True)
-else:
-    if "-" in yami_monday_hours:
-        yami_monday_hours = convert_time(yami_monday_hours, to_24=True)
+for data in employee:
+    if "hours" in data or "break" in data:
+        employee[data] = format_time(employee[data])
+    # print(employee[data])
 
-print(yami_monday_hours)
-
-# for employee in employee_csv:
-#     for data in employee:
-#         if ":" in employee[data]:
-#             employee[data] = split_multiple_hours(employee[data])
-#             print(employee[data])
+staff = Staff(join(dirname(realpath(__file__)), "employeeInformation.csv"))
