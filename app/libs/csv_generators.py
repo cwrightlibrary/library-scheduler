@@ -68,3 +68,11 @@ def convert_time(input_time, to_24):
     return int(output_time)
 
 STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
+
+class Template:
+    def __init__(self, template_csv):
+        with open(template_csv, "r") as csv_file:
+            reader = csv.DictReader(csv_file)
+            self.schedule_template = [row for row in reader]
+
+TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
