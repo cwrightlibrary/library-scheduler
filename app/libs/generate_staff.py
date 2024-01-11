@@ -11,6 +11,15 @@ class Staff:
             for employee in self.staff_list:
                 for data in employee:
                     if "hours" in data or "break" in data: employee[data] = self.format_time(employee[data])
+        for employee in self.staff_list:
+            employee["pickup-window-time"] = 0
+            employee["floor-lead-time"] = 0
+            employee["sp1a-time"] = 0
+            employee["sp1b-time"] = 0
+            employee["sp2a-time"] = 0
+            employee["sp2b-time"] = 0
+        for employee in range(len(self.staff_list)):
+            self.staff_list[employee]["rank"] = employee
     
     def format_time(self, input_time):
         output_time = input_time
