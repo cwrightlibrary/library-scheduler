@@ -85,6 +85,15 @@ class Template:
         #             day_dict[day] = hour[day]
         #     print(day_dict)
         # FIND A WAY TO GROUP ALL VALUES OF THE SAME KEY
+        temp_schedule = []
+        for row in self.schedule_template:
+            keys = []
+            for day in row:
+                keys.append(day)
+        for day in keys:
+            for row in self.schedule_template:
+                for col in row:
+                    print(col)
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
 # print(TEMPLATE.schedule_template[0])
