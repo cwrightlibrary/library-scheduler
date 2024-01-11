@@ -3,6 +3,7 @@ from prettytable import PrettyTable
 from random import randint
 
 staff = STAFF.staff_list
+template = TEMPLATE.schedule_template
 compare_time = [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
 location_names = ["pickup-window", "floor-lead", "sp1a", "sp1b", "sp2a", "sp2b"]
 
@@ -29,5 +30,3 @@ for d in monday_template:
     schedule_print.add_row(d)
 
 print(schedule_print)
-
-print(TEMPLATE.schedule_template)

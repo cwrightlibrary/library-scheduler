@@ -74,5 +74,17 @@ class Template:
         with open(template_csv, "r") as csv_file:
             reader = csv.DictReader(csv_file)
             self.schedule_template = [row for row in reader]
+        # for hour in self.schedule_template:
+        #     temp_schedule = []
+        #     i = 0
+        #     day_dict = {}
+            
+        #     for day in hour:
+        #         i += 1
+        #         if i < 7:
+        #             day_dict[day] = hour[day]
+        #     print(day_dict)
+        # FIND A WAY TO GROUP ALL VALUES OF THE SAME KEY
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
+# print(TEMPLATE.schedule_template[0])
