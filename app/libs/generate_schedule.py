@@ -25,13 +25,13 @@ def create_schedule(date):
         info_date_selector = int(info_date[len(info_date) - 1:]) - 1
         info_date = info_date[0:len(info_date) - 1]
     if "friday" in info_date:
-        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1])
+        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1]) - 1
         info_date_selector_2 = info_date[len(info_date) - 1:]
-        if info_date_selector_2 == "a": info_date_selector_2 = 0
+        if info_date_selector_2 == "a":info_date_selector_2 = 0
         if info_date_selector_2 == "b": info_date_selector_2 = 1
         info_date = info_date[0:len(info_date) - 2]
     if "saturday" in info_date:
-        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1])
+        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1]) - 1
         info_date_selector_2 = info_date[len(info_date) - 1:]
         if info_date_selector_2 == "a": info_date_selector_2 = 0
         if info_date_selector_2 == "b": info_date_selector_2 = 1
@@ -97,20 +97,42 @@ def create_schedule(date):
                         elif "/" in template[day][hour]:
                             split_employees = template[day][hour].split("/")
                             assign_employee = ""
-                            for employee in staff:
-                                if split_employees[0] == employee["name"].split()[0].lower():
-                                    assign_employee += employee["name"].split()[0]
-                                if split_employees[1] == employee["name"].split()[0].lower():
-                                    print(employee["name"])
-                                    assign_employee += " 'til " + convert_time(employee[weekday + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday + "-hours"][0], to_24=False)
+                            if "*" in template[day][hour]:
+                                split_idx = split_employees[0].index("*")
+                                split_hour = split_employees[0][split_idx + 1:]
+                                split_employees[0] = split_employees[0][0:split_idx]
+                            if "friday" in weekday or "saturday" in weekday:
+                                weekday_hours = weekday[0:len(weekday) - 2]
+                            elif "sunday" in weekday:
+                                weekday_hours = weekday[0:len(weekday) - 1]
+                            else:
+                                weekday_hours = weekday
+                            if "*" in template[day][hour]:
+                                for employee in staff:
+                                    if split_employees[0] == employee["name"].split()[0].lower():
+                                        assign_employee += employee["name"].split()[0] + " 'til " + split_hour + "\n"
+                                for employee in staff:
+                                    if split_employees[1] == employee["name"].split()[0].lower():
+                                        assign_employee += employee["name"].split()[0] + " @ " + split_hour
+                            else:
+                                for employee in staff:
+                                    if not "Off" in employee[weekday_hours + "-hours"][0]:
+                                        if split_employees[0] == employee["name"].split()[0].lower():
+                                            print(split_employees)
+                                            assign_employee += employee["name"].split()[0]
+                                        if split_employees[1] == employee["name"].split()[0].lower():
+                                            assign_employee += " 'til " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False)
                             schedule[i][hour + 1] = assign_employee
-                        elif "*" in template[day][hour]:
+                        elif "*" in template[day][hour] and not "/" in template[day][hour]:
                             split_employee = template[day][hour].split("*")
                             assign_employee = ""
                             for employee in staff:
                                 if split_employee[0] == employee["name"].split()[0].lower():
                                     assign_employee += employee["name"].split()[0] + " 'til " + split_employee[1]
                             schedule[i][hour + 1] = assign_employee
+                        # elif "*" in template[day][hour] and "/" in template[day][hour]:
+                        #     # FINAL STEP FOR TEMPLATES
+                        #     pass
                 i += 1
 
     fill_template(weekday_template, date_day, staff, template)
@@ -119,7 +141,8 @@ def create_schedule(date):
         schedule_print.add_row(d)
     return info_print, schedule_print
 
-#Fridays and Saturdays need work
+weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
+
 monday_info, monday_schedule = create_schedule(["Monday", "January 15, 2024"])
 
 print(monday_info)
