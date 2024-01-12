@@ -63,10 +63,15 @@ class Staff:
 
 def convert_time(input_time, to_24):
     output_time = input_time
-    if not ":" in output_time: output_time = output_time[:-2] + ":00" + output_time[-2:]
-    if to_24: output_time = datetime.strptime(output_time.upper(), "%I:%M%p").strftime("%H%M")
-    else: output_time = datetime.strptime(output_time, "%H%M").strftime("%I:%M%p")
-    return int(output_time)
+    if to_24:
+        if not ":" in output_time: output_time = output_time[:-2] + ":00" + output_time[-2:]
+        output_time = datetime.strptime(output_time.upper(), "%I:%M%p").strftime("%H%M")
+    else:
+        output_time = datetime.strptime(str(output_time), "%H%M").strftime("%I:%M%p")
+        if output_time[0] == "0": output_time = output_time[1:]
+        output_time = output_time.replace(":00", "")
+        output_time = output_time.replace("AM", "").replace("PM", "")
+    return output_time
 
 STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
 
@@ -81,3 +86,8 @@ class Template:
                 self.schedule_template[key].append(value)
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
+
+emp = STAFF.staff_list[5]["monday-hours"][0]
+print(emp)
+emp = convert_time(emp, to_24=False)
+print(emp)

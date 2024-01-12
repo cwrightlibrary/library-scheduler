@@ -27,14 +27,6 @@ monday_template = [
     ["project time", "", "", "", "", "", ""]
 ]
 
-# Fill raw template
-# i = 0
-# for day in template:
-#     if "monday" in day:
-#         for hour in range(len(template[day])):
-#             monday_template[i][hour + 1] = template[day][hour]
-#         i += 1
-
 def fill_template(schedule, weekday, staff, template):
     i = 0
     for day in template:
@@ -47,7 +39,14 @@ def fill_template(schedule, weekday, staff, template):
                                 assign_employee = employee["name"].split()[0]
                         schedule[i][hour + 1] = assign_employee
                     elif "/" in template[day][hour]:
-                        pass
+                        split_employees = template[day][hour].split("/")
+                        assign_employee = ""
+                        for employee in staff:
+                            if split_employees[0] == employee["name"].split()[0].lower():
+                                assign_employee += employee["name"].split()[0]
+                            if split_employees[1] == employee["name"].split()[0].lower():
+                                assign_employee += " 'til " + convert_time(employee[weekday + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday + "-hours"][0], to_24=False)
+                        schedule[i][hour + 1] = assign_employee
                     elif "*" in template[day][hour]:
                         pass
             i += 1
