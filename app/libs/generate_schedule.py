@@ -17,7 +17,43 @@ def isavailable(employee, day, time):
             return True
 
 def create_schedule(date):
-    header_list = [
+    info_print = PrettyTable(["who's working", "lunch breaks", "schedule changes"])
+    info_working, info_lunch, info_changes = "", "", ""
+    
+    info_date = date[0].lower()
+    if "sunday" in info_date:
+        info_date_selector = int(info_date[len(info_date) - 1:]) - 1
+        info_date = info_date[0:len(info_date) - 1]
+    if "friday" in info_date:
+        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1])
+        info_date_selector_2 = info_date[len(info_date) - 1:]
+        if info_date_selector_2 == "a": info_date_selector_2 = 0
+        if info_date_selector_2 == "b": info_date_selector_2 = 1
+        info_date = info_date[0:len(info_date) - 2]
+    if "saturday" in info_date:
+        info_date_selector_1 = int(info_date[len(info_date) - 2:len(info_date) - 1])
+        info_date_selector_2 = info_date[len(info_date) - 1:]
+        if info_date_selector_2 == "a": info_date_selector_2 = 0
+        if info_date_selector_2 == "b": info_date_selector_2 = 1
+        info_date = info_date[0:len(info_date) - 2]
+    
+    for employee in staff:
+        if info_date == "sunday":
+            if not "Off" in employee[info_date + "-hours"][info_date_selector]:
+                info_working += convert_time(employee[info_date + "-hours"][info_date_selector][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][info_date_selector][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
+        elif info_date == "friday" or info_date == "saturday":
+            if not "Off" in employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2]:
+                info_working += convert_time(employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
+        else:
+            if not "Off" in employee[info_date + "-hours"]:
+                info_working += convert_time(employee[info_date + "-hours"][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
+    
+    info_header_list = [[info_working, info_lunch, info_changes]]
+    
+    for d in info_header_list:
+        info_print.add_row(d)
+    
+    schedule_header_list = [
         ["", "2-3", "3-4", "4-5", "5-6"],
         ["", "9-11", "11-1", "1-2", "2-4", "4-6", "6-8"],
         ["", "9-11", "11-12", "12-1", "1-2", "2-4", "4-6"]
@@ -26,15 +62,13 @@ def create_schedule(date):
     
     date_day = date[0].lower()
     if day_names.index(date_day) <= 2:
-        header = header_list[0]
+        schedule_header = schedule_header_list[0]
     if day_names.index(date_day) >= 3 and day_names.index(date_day) <= 6:
-        header = header_list[1]
+        schedule_header = schedule_header_list[1]
     if day_names.index(date_day) >= 7:
-        header = header_list[2]
+        schedule_header = schedule_header_list[2]
     
-    info_print = PrettyTable()
-    
-    schedule_print = PrettyTable(header)
+    schedule_print = PrettyTable(schedule_header)
     weekday_template = [
         ["pick-up window", "", "", "", "", "", ""],
         ["floor lead", "", "", "", "", "", ""],
@@ -67,6 +101,7 @@ def create_schedule(date):
                                 if split_employees[0] == employee["name"].split()[0].lower():
                                     assign_employee += employee["name"].split()[0]
                                 if split_employees[1] == employee["name"].split()[0].lower():
+                                    print(employee["name"])
                                     assign_employee += " 'til " + convert_time(employee[weekday + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday + "-hours"][0], to_24=False)
                             schedule[i][hour + 1] = assign_employee
                         elif "*" in template[day][hour]:
@@ -82,8 +117,10 @@ def create_schedule(date):
 
     for d in weekday_template:
         schedule_print.add_row(d)
-    return (info_print, schedule_print)
+    return info_print, schedule_print
 
-monday_schedule = create_schedule(["Sunday1", "January 15, 2024"])
+#Fridays and Saturdays need work
+monday_info, monday_schedule = create_schedule(["Monday", "January 15, 2024"])
 
+print(monday_info)
 print(monday_schedule)

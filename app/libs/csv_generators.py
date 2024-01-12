@@ -73,8 +73,6 @@ def convert_time(input_time, to_24):
         output_time = output_time.replace("AM", "").replace("PM", "")
     return output_time
 
-STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
-
 class Template:
     def __init__(self, template_csv):
         with open(template_csv, "r") as csv_file:
@@ -88,5 +86,7 @@ class Template:
             if "DEL" in self.schedule_template[i]:
                 self.schedule_template[i].pop()
                 self.schedule_template[i].pop()
+
+STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
