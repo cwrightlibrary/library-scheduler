@@ -2,6 +2,8 @@ from csv_generators import convert_time, STAFF, TEMPLATE
 from prettytable import PrettyTable
 from random import randint
 
+# Fix info for all days of the week
+
 staff = STAFF.staff_list
 template = TEMPLATE.schedule_template
 compare_time = [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
@@ -37,6 +39,10 @@ def create_schedule(date):
         if info_date_selector_2 == "b": info_date_selector_2 = 1
         info_date = info_date[0:len(info_date) - 2]
     
+    nine_workers = []
+    two_workers = []
+    other_workers = []
+    
     for employee in staff:
         if info_date == "sunday":
             if not "Off" in employee[info_date + "-hours"][info_date_selector]:
@@ -46,7 +52,18 @@ def create_schedule(date):
                 info_working += convert_time(employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
         else:
             if not "Off" in employee[info_date + "-hours"]:
-                info_working += convert_time(employee[info_date + "-hours"][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
+                if employee[info_date + "-hours"][0] == "0900" and employee[info_date + "-hours"][1] == "1730":
+                    nine_workers.append(employee["name"].split()[0])
+                if employee[info_date + "-hours"][0] == "1400" and employee[info_date + "-hours"][1] == "2000":
+                    two_workers.append(employee["name"].split()[0])
+                elif employee[info_date + "-hours"][1] != "1730" and employee[info_date + "-hours"][0] != "1400":
+                    other_workers.append(convert_time(employee[info_date + "-hours"][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][1], to_24=False) + ": " + employee["name"].split()[0])
+    info_working += "9-5:30:\n" + ",\n".join(nine_workers)
+    info_working += "\n\n"
+    info_working += "2-8:\n" + ",\n".join(two_workers)
+    info_working += "\n\n"
+    info_working += "\n".join(other_workers)
+                # info_working += convert_time(employee[info_date + "-hours"][0], to_24=False) + "-" + convert_time(employee[info_date + "-hours"][1], to_24=False) + ": " + employee["name"].split()[0] + "\n"
     
     info_header_list = [[info_working, info_lunch, info_changes]]
     
@@ -143,7 +160,18 @@ def create_schedule(date):
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
 
-monday_info, monday_schedule = create_schedule(["Monday", "January 15, 2024"])
+date = ["Sunday1", "January 15, 2024"]
+monday_info, monday_schedule = create_schedule(date)
 
+weekday = date[0]
+
+if "sunday" in weekday.lower():
+    weekday = weekday[0:len(weekday) - 1]
+if "friday" in weekday.lower():
+    weekday = weekday[0:len(weekday) - 2]
+if "saturday" in weekday.lower():
+    weekday = weekday[0:len(weekday) - 2]
+
+print(weekday + "\n" + date[1])
 print(monday_info)
 print(monday_schedule)
