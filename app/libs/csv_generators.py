@@ -84,10 +84,9 @@ class Template:
         for d in (temp_list[0], temp_list[1], temp_list[2], temp_list[3], temp_list[4], temp_list[5]):
             for key, value in d.items():
                 self.schedule_template[key].append(value)
+        for i in self.schedule_template:
+            if "DEL" in self.schedule_template[i]:
+                self.schedule_template[i].pop()
+                self.schedule_template[i].pop()
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
-
-emp = STAFF.staff_list[5]["monday-hours"][0]
-print(emp)
-emp = convert_time(emp, to_24=False)
-print(emp)

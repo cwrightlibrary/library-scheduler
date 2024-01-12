@@ -16,44 +16,74 @@ def isavailable(employee, day, time):
             or (staff_in < compare_in and staff_out > compare_in and staff_out <= compare_out)):
             return True
 
-schedule_print = PrettyTable(["", "9-11", "11-1", "1-2", "2-4", "4-6", "6-8"])
-monday_template = [
-    ["pick-up window", "", "", "", "", "", ""],
-    ["floor lead", "", "", "", "", "", ""],
-    ["service pt 1", "", "", "", "", "", ""],
-    ["service pt 1", "", "", "", "", "", ""],
-    ["service pt 2", "", "", "", "", "", ""],
-    ["service pt 2", "", "", "", "", "", ""],
-    ["project time", "", "", "", "", "", ""]
-]
+def create_schedule(date):
+    header_list = [
+        ["", "2-3", "3-4", "4-5", "5-6"],
+        ["", "9-11", "11-1", "1-2", "2-4", "4-6", "6-8"],
+        ["", "9-11", "11-12", "12-1", "1-2", "2-4", "4-6"]
+    ]
+    day_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
+    
+    date_day = date[0].lower()
+    if day_names.index(date_day) <= 2:
+        header = header_list[0]
+    if day_names.index(date_day) >= 3 and day_names.index(date_day) <= 6:
+        header = header_list[1]
+    if day_names.index(date_day) >= 7:
+        header = header_list[2]
+    
+    info_print = PrettyTable()
+    
+    schedule_print = PrettyTable(header)
+    weekday_template = [
+        ["pick-up window", "", "", "", "", "", ""],
+        ["floor lead", "", "", "", "", "", ""],
+        ["service pt 1", "", "", "", "", "", ""],
+        ["service pt 1", "", "", "", "", "", ""],
+        ["service pt 2", "", "", "", "", "", ""],
+        ["service pt 2", "", "", "", "", "", ""],
+        ["project time", "", "", "", "", "", ""]
+    ]
+    if "sunday" in date_day:
+        for i in weekday_template:
+            i.pop()
+            i.pop()
 
-def fill_template(schedule, weekday, staff, template):
-    i = 0
-    for day in template:
-        if weekday in day:
-            for hour in range(len(template[day])):
-                if not "none" == template[day][hour]:
-                    if not "/" in template[day][hour] and not "*" in template[day][hour]:
-                        for employee in staff:
-                            if template[day][hour] == employee["name"].split()[0].lower():
-                                assign_employee = employee["name"].split()[0]
-                        schedule[i][hour + 1] = assign_employee
-                    elif "/" in template[day][hour]:
-                        split_employees = template[day][hour].split("/")
-                        assign_employee = ""
-                        for employee in staff:
-                            if split_employees[0] == employee["name"].split()[0].lower():
-                                assign_employee += employee["name"].split()[0]
-                            if split_employees[1] == employee["name"].split()[0].lower():
-                                assign_employee += " 'til " + convert_time(employee[weekday + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday + "-hours"][0], to_24=False)
-                        schedule[i][hour + 1] = assign_employee
-                    elif "*" in template[day][hour]:
-                        pass
-            i += 1
+    def fill_template(schedule, weekday, staff, template):
+        i = 0
+        for day in template:
+            if weekday in day:
+                for hour in range(len(template[day])):
+                    if not "none" == template[day][hour]:
+                        if not "/" in template[day][hour] and not "*" in template[day][hour]:
+                            for employee in staff:
+                                if template[day][hour] == employee["name"].split()[0].lower():
+                                    assign_employee = employee["name"].split()[0]
+                            schedule[i][hour + 1] = assign_employee
+                        elif "/" in template[day][hour]:
+                            split_employees = template[day][hour].split("/")
+                            assign_employee = ""
+                            for employee in staff:
+                                if split_employees[0] == employee["name"].split()[0].lower():
+                                    assign_employee += employee["name"].split()[0]
+                                if split_employees[1] == employee["name"].split()[0].lower():
+                                    assign_employee += " 'til " + convert_time(employee[weekday + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday + "-hours"][0], to_24=False)
+                            schedule[i][hour + 1] = assign_employee
+                        elif "*" in template[day][hour]:
+                            split_employee = template[day][hour].split("*")
+                            assign_employee = ""
+                            for employee in staff:
+                                if split_employee[0] == employee["name"].split()[0].lower():
+                                    assign_employee += employee["name"].split()[0] + " 'til " + split_employee[1]
+                            schedule[i][hour + 1] = assign_employee
+                i += 1
 
-fill_template(monday_template, "monday", staff, template)
+    fill_template(weekday_template, date_day, staff, template)
 
-for d in monday_template:
-    schedule_print.add_row(d)
+    for d in weekday_template:
+        schedule_print.add_row(d)
+    return (info_print, schedule_print)
 
-print(schedule_print)
+monday_schedule = create_schedule(["Sunday1", "January 15, 2024"])
+
+print(monday_schedule)
