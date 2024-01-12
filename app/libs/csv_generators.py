@@ -1,4 +1,5 @@
 import csv
+from collections import defaultdict
 from datetime import datetime
 from os.path import dirname, join, realpath
 
@@ -73,27 +74,10 @@ class Template:
     def __init__(self, template_csv):
         with open(template_csv, "r") as csv_file:
             reader = csv.DictReader(csv_file)
-            self.schedule_template = [row for row in reader]
-        # for hour in self.schedule_template:
-        #     temp_schedule = []
-        #     i = 0
-        #     day_dict = {}
-            
-        #     for day in hour:
-        #         i += 1
-        #         if i < 7:
-        #             day_dict[day] = hour[day]
-        #     print(day_dict)
-        # FIND A WAY TO GROUP ALL VALUES OF THE SAME KEY
-        temp_schedule = []
-        for row in self.schedule_template:
-            keys = []
-            for day in row:
-                keys.append(day)
-        for day in keys:
-            for row in self.schedule_template:
-                for col in row:
-                    print(col)
+            temp_list = [row for row in reader]
+        self.schedule_template = defaultdict(list)
+        for d in (temp_list[0], temp_list[1], temp_list[2], temp_list[3], temp_list[4], temp_list[5]):
+            for key, value in d.items():
+                self.schedule_template[key].append(value)
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
-# print(TEMPLATE.schedule_template[0])

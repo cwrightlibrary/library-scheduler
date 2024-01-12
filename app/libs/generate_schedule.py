@@ -18,13 +18,41 @@ def isavailable(employee, day, time):
 
 schedule_print = PrettyTable(["", "9-11", "11-1", "1-2", "2-4", "4-6", "6-8"])
 monday_template = [
-    ["pick-up window", "", "", "", "", "", "",],
-    ["floor lead", "", "", "", "", "", "",],
-    ["service pt 1", "", "", "", "", "", "",],
-    ["service pt 1", "", "", "", "", "", "",],
-    ["service pt 2", "", "", "", "", "", "",],
-    ["service pt 2", "", "", "", "", "", "",]
+    ["pick-up window", "", "", "", "", "", ""],
+    ["floor lead", "", "", "", "", "", ""],
+    ["service pt 1", "", "", "", "", "", ""],
+    ["service pt 1", "", "", "", "", "", ""],
+    ["service pt 2", "", "", "", "", "", ""],
+    ["service pt 2", "", "", "", "", "", ""],
+    ["project time", "", "", "", "", "", ""]
 ]
+
+# Fill raw template
+# i = 0
+# for day in template:
+#     if "monday" in day:
+#         for hour in range(len(template[day])):
+#             monday_template[i][hour + 1] = template[day][hour]
+#         i += 1
+
+def fill_template(schedule, weekday, staff, template):
+    i = 0
+    for day in template:
+        if weekday in day:
+            for hour in range(len(template[day])):
+                if not "none" == template[day][hour]:
+                    if not "/" in template[day][hour] and not "*" in template[day][hour]:
+                        for employee in staff:
+                            if template[day][hour] == employee["name"].split()[0].lower():
+                                assign_employee = employee["name"].split()[0]
+                        schedule[i][hour + 1] = assign_employee
+                    elif "/" in template[day][hour]:
+                        pass
+                    elif "*" in template[day][hour]:
+                        pass
+            i += 1
+
+fill_template(monday_template, "monday", staff, template)
 
 for d in monday_template:
     schedule_print.add_row(d)
