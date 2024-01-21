@@ -17,7 +17,7 @@ def isavailable(employee, day, time):
             return True
 
 def create_schedule(date):
-    info_print = PrettyTable(["who's working", "lunch breaks", "schedule changes"])
+    info_print = PrettyTable(["    WHO'S WORKING    ", "     LUNCH BREAKS     ", "   SCHEDULE CHANGES   "])
     info_working, info_lunch, info_changes = "", "", ""
     
     info_date = date[0].lower()
@@ -41,53 +41,91 @@ def create_schedule(date):
         info_working = ""
         is_sunday = True if info_date == "sunday" else False
         is_friday_saturday = True if info_date == "friday" or info_date == "saturday" else False
-        is_weekday = True if not is_sunday and not is_friday_saturday else False
-
-        a_workers = []
-        b_workers = []
-        c_workers = []
+        
+        all_employee_hours_list = []
+        grouped_employees_by_hours = []
         
         for employee in staff:
-            employee_name = employee["name"].split()[0]
             if is_sunday:
                 employee_hours = employee[info_date + "-hours"][info_date_selector]
-                if not "Off" in employee_hours:
-                    a_workers.append(employee_name)
             elif is_friday_saturday:
                 employee_hours = employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2]
-                if not "Off" in employee_hours:
-                    if employee_hours[0] == "0900" and employee_hours[1] == "1800":
-                        a_workers.append(employee_name)
-                    else:
-                        employee_float = convert_time(employee_hours[0], to_24=False) + "-" + convert_time(employee_hours[1], to_24=False) + ": " + employee_name
-                        b_workers.append(employee_float)
-            elif is_weekday:
+            else:
                 employee_hours = employee[info_date + "-hours"]
-                if not "Off" in employee_hours:
-                    if employee_hours[0] == "0900" and employee_hours[1] == "1730":
-                        a_workers.append(employee_name)
-                    elif employee_hours[0] == "1400" and employee_hours[1] == "2000":
-                        b_workers.append(employee_name)
-                    else:
-                        employee_float = convert_time(employee_hours[0], to_24=False) + "-" + convert_time(employee_hours[1], to_24=False) + ": " + employee_name
-                        c_workers.append(employee_float)
+            if not "Off" in employee_hours:
+                all_employee_hours_list.append([employee_hours[0], employee_hours[1]])
         
-        if is_sunday:
-            info_working += "2-6:\n" + ",\n".join(a_workers)
-        elif is_friday_saturday:
-            info_working += "9-6:\n" + ",\n".join(a_workers)
-            info_working += "\n\n"
-            info_working += "\n".join(b_workers)
-        elif is_weekday:
-            info_working += "9-5:30:\n" + ",\n".join(a_workers)
-            info_working += "\n\n"
-            info_working += "2-8:\n" + ",\n".join(b_workers)
-            info_working += "\n\n"
-            info_working += "\n".join(c_workers)
+        all_employee_hours_list = list(set(tuple(sorted(sub)) for sub in all_employee_hours_list))
+        
+        for hours in all_employee_hours_list:
+            hour_1 = convert_time(hours[0], to_24=False)
+            hour_2 = convert_time(hours[1], to_24=False)
+            temp_employees = []
+            for employee in staff:
+                employee_name = employee["name"].split()[0]
+                if is_sunday:
+                    employee_hours = employee[info_date + "-hours"][info_date_selector]
+                elif is_friday_saturday:
+                    employee_hours = employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2]
+                else:
+                    employee_hours = employee[info_date + "-hours"]
+                if employee_hours[0] == hours[0] and employee_hours[1] == hours[1]:
+                    temp_employees.append(employee_name)
+            grouped_employees_by_hours.append([[hour_1, hour_2], temp_employees])
+        
+        for slot in reversed(grouped_employees_by_hours):
+            info_working += "-".join(slot[0]) + ":\n" + ",\n".join(slot[1]) + "\n" + "\n"
         
         return info_working
 
+    def fill_info_lunch(info_date):
+        info_lunch = ""
+        is_sunday = True if info_date == "sunday" else False
+        is_friday_saturday = True if info_date == "friday" or info_date == "saturday" else False
+        
+        all_lunch_hours_list = []
+        grouped_employees_by_lunch = []
+        
+        for employee in staff:
+            if is_sunday:
+                employee_lunch = employee[info_date + "-break"][info_date_selector]
+            elif is_friday_saturday:
+                employee_lunch = employee[info_date + "-break"][info_date_selector_1][info_date_selector_2]
+            else:
+                employee_lunch = employee[info_date + "-break"]
+            if not "None" in employee_lunch:
+                all_lunch_hours_list.append(employee_lunch[0])
+        
+        all_lunch_hours_list = list(set(all_lunch_hours_list))
+        
+        for lunch in all_lunch_hours_list:
+            hour = convert_time(lunch, to_24=False)
+            temp_employees = []
+            for employee in staff:
+                employee_name = employee["name"].split()[0]
+                if is_sunday:
+                    employee_lunch = employee[info_date + "-break"][info_date_selector]
+                elif is_friday_saturday:
+                    employee_lunch = employee[info_date + "-break"][info_date_selector_1][info_date_selector_2]
+                else:
+                    employee_lunch = employee[info_date + "-break"]
+                if employee_lunch[0] == lunch:
+                    temp_employees.append(employee_name)
+            grouped_employees_by_lunch.append([hour, temp_employees])
+        
+        for slot in reversed(grouped_employees_by_lunch):
+            lunch_start = slot[0]
+            lunch_end = int(slot[0]) + 1
+            if lunch_end > 12:
+                lunch_end -= 12
+            lunch_end = str(lunch_end)
+            hours_string = lunch_start + "-" + lunch_end + ":\n"
+            info_lunch += hours_string + ",\n".join(slot[1]) + "\n" + "\n"
+        
+        return info_lunch
+
     info_working = fill_info_working(info_date)
+    info_lunch = fill_info_lunch(info_date)
     
     info_header_list = [[info_working, info_lunch, info_changes]]
     
@@ -111,13 +149,13 @@ def create_schedule(date):
     
     schedule_print = PrettyTable(schedule_header)
     weekday_template = [
-        ["pick-up window", "", "", "", "", "", ""],
-        ["floor lead", "", "", "", "", "", ""],
-        ["service pt 1", "", "", "", "", "", ""],
-        ["service pt 1", "", "", "", "", "", ""],
-        ["service pt 2", "", "", "", "", "", ""],
-        ["service pt 2", "", "", "", "", "", ""],
-        ["project time", "", "", "", "", "", ""]
+        ["PICK-UP WINDOW", "", "", "", "", "", ""],
+        ["FLOOR LEAD", "", "", "", "", "", ""],
+        ["SERVICE PT 1", "", "", "", "", "", ""],
+        ["SERVICE PT 1", "", "", "", "", "", ""],
+        ["SERVICE PT 2", "", "", "", "", "", ""],
+        ["SERVICE PT 2", "", "", "", "", "", ""],
+        ["PROJECT TIME", "", "", "", "", "", ""]
     ]
     if "sunday" in date_day:
         for i in weekday_template:
@@ -192,6 +230,6 @@ if "friday" in weekday.lower():
 if "saturday" in weekday.lower():
     weekday = weekday[0:len(weekday) - 2]
 
-print(weekday + "\n" + date[1])
+print(weekday.upper() + "\n" + date[1].upper())
 print(monday_info)
-# print(monday_schedule)
+print(monday_schedule)
