@@ -73,7 +73,7 @@ def create_schedule(date):
                     temp_employees.append(employee_name)
             grouped_employees_by_hours.append([[hour_1, hour_2], temp_employees])
         
-        for slot in reversed(grouped_employees_by_hours):
+        for slot in grouped_employees_by_hours:
             info_working += "-".join(slot[0]) + ":\n" + ",\n".join(slot[1]) + "\n" + "\n"
         
         return info_working
@@ -113,7 +113,7 @@ def create_schedule(date):
                     temp_employees.append(employee_name)
             grouped_employees_by_lunch.append([hour, temp_employees])
         
-        for slot in reversed(grouped_employees_by_lunch):
+        for slot in grouped_employees_by_lunch:
             lunch_start = slot[0]
             lunch_end = int(slot[0]) + 1
             if lunch_end > 12:
@@ -133,9 +133,9 @@ def create_schedule(date):
         info_print.add_row(d)
     
     schedule_header_list = [
-        ["", "2-3", "3-4", "4-5", "5-6"],
-        ["", "9-11", "11-1", "1-2", "2-4", "4-6", "6-8"],
-        ["", "9-11", "11-12", "12-1", "1-2", "2-4", "4-6"]
+        ["", "2 - 3", "3 - 4", "4 - 5", "5 - 6"],
+        ["", "9 - 11", "11 - 1", "1 - 2", "2 - 4", "4 - 6", "6 - 8"],
+        ["", "9 - 11", "11 - 12", "12 - 1", "1 - 2", "2 - 4", "4 - 6"]
     ]
     day_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
     
@@ -213,7 +213,11 @@ def create_schedule(date):
     fill_template(weekday_template, date_day, staff, template)
 
     for d in weekday_template:
-        schedule_print.add_row(d)
+        idx = weekday_template.index(d)
+        if idx in [0, 1, 3, 5]:
+            schedule_print.add_row(d, divider=True)
+        else:
+            schedule_print.add_row(d)
     return info_print, schedule_print
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
@@ -230,6 +234,9 @@ if "friday" in weekday.lower():
 if "saturday" in weekday.lower():
     weekday = weekday[0:len(weekday) - 2]
 
-print(weekday.upper() + "\n" + date[1].upper())
+weekday_centered = date_centered = (" " * int(37 - len(weekday) + 1)) + weekday.upper() + (" " * int(37 - len(weekday) + 1))
+date_centered = (" " * int(37 - len(date[1]) + 1)) + date[1].upper() + (" " * int(37 - len(date[1]) + 1))
+
+print(weekday_centered + "\n" + date_centered)
 print(monday_info)
 print(monday_schedule)
