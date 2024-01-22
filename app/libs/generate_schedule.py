@@ -115,9 +115,15 @@ def create_schedule(date):
         
         for slot in grouped_employees_by_lunch:
             lunch_start = slot[0]
-            lunch_end = int(slot[0]) + 1
+            if ":30" in lunch_start:
+                lunch_end = lunch_start.replace(":30", "")
+                lunch_end = int(lunch_end) + 1
+            else:
+                lunch_end = int(slot[0]) + 1
             if lunch_end > 12:
                 lunch_end -= 12
+            if ":30" in lunch_start:
+                lunch_end = str(lunch_end) + ":30"
             lunch_end = str(lunch_end)
             hours_string = lunch_start + "-" + lunch_end + ":\n"
             info_lunch += hours_string + ",\n".join(slot[1]) + "\n" + "\n"
@@ -222,7 +228,7 @@ def create_schedule(date):
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
 
-date = ["Friday1a", "January 26, 2024"]
+date = ["Monday", "January 22, 2024"]
 monday_info, monday_schedule = create_schedule(date)
 
 weekday = date[0]
