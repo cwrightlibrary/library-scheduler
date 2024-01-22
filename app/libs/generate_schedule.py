@@ -217,6 +217,11 @@ def create_schedule(date):
                 i += 1
 
     fill_template(weekday_template, date_day, staff, template)
+    
+    # WORKING ON THIS
+    for loc in weekday_template:
+        for hour in range(1, len(loc)):
+            print(compare_time[hour - 1][0], loc[0], loc[hour])
 
     for d in weekday_template:
         idx = weekday_template.index(d)
@@ -240,9 +245,11 @@ if "friday" in weekday.lower():
 if "saturday" in weekday.lower():
     weekday = weekday[0:len(weekday) - 2]
 
-weekday_centered = date_centered = (" " * int(37 - len(weekday) + 1)) + weekday.upper() + (" " * int(37 - len(weekday) + 1))
-date_centered = (" " * int(37 - len(date[1]) + 1)) + date[1].upper() + (" " * int(37 - len(date[1]) + 1))
+info_width = 75
 
-print(weekday_centered + "\n" + date_centered)
-print(monday_info)
-print(monday_schedule)
+weekday_centered = " " * int((info_width / 2) - int(len(weekday) / 2)) + weekday
+date_centered = " " * int((info_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
+
+# print(weekday_centered + "\n" + date_centered)
+# print(monday_info)
+# print(monday_schedule)
