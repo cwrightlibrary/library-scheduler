@@ -273,12 +273,14 @@ info_width = 75
 weekday_centered = " " * int((info_width / 2) - int(len(weekday) / 2)) + weekday
 date_centered = " " * int((info_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
 
-# print(weekday_centered.upper() + "\n" + date_centered.upper())
-# print(monday_info)
-# print(monday_schedule)
+print(weekday_centered.upper() + "\n" + date_centered.upper())
+print(monday_info)
+print(monday_schedule)
 
-print_text = weekday_centered.upper() + "\n" + date_centered.upper() + "\n" + str(monday_info) + "\n" + str(monday_schedule)
+# print_text = weekday_centered.upper() + "\n" + date_centered.upper() + "\n" + str(monday_info) + "\n" + str(monday_schedule)
 
-f = open(join(dirname(realpath(__file__)), "schedule_preview.txt"), "w")
-f.write(print_text)
-f.close()
+# f = open(join(dirname(realpath(__file__)), "schedule_preview.txt"), "w")
+# f.write(print_text)
+# f.close()
+
+
