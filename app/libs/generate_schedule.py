@@ -209,14 +209,14 @@ def create_schedule(date):
                                         assign_employee += employee["name"].split()[0] + " 'til " + split_hour + "\n"
                                 for employee in staff:
                                     if split_employees[1] == employee["name"].split()[0].lower():
-                                        assign_employee += employee["name"].split()[0] + " @ " + split_hour
+                                        assign_employee += employee["name"].split()[0] + " at " + split_hour
                             else:
                                 for employee in staff:
                                     if not "Off" in employee[weekday_hours + "-hours"][0]:
                                         if split_employees[0] == employee["name"].split()[0].lower():
                                             assign_employee += employee["name"].split()[0]
                                         if split_employees[1] == employee["name"].split()[0].lower():
-                                            assign_employee += " 'til " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " @ " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False)
+                                            assign_employee += " 'til " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " at " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False)
                             schedule[i][hour + 1] = assign_employee
                         elif "*" in template[day][hour] and not "/" in template[day][hour]:
                             split_employee = template[day][hour].split("*")
@@ -249,7 +249,7 @@ def create_schedule(date):
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
 
-date = ["Monday", "January 22, 2024"]
+date = ["Tuesday", "January 23, 2024"]
 monday_info, monday_schedule = create_schedule(date)
 
 weekday = date[0]
