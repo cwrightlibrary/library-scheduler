@@ -1,4 +1,5 @@
 from csv_generators import convert_time, STAFF, TEMPLATE
+from os.path import dirname, join, realpath
 from prettytable import PrettyTable
 from random import randint
 
@@ -7,10 +8,10 @@ template = TEMPLATE.schedule_template
 compare_time = [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
 location_names = ["pickup-window", "floor-lead", "sp1a", "sp1b", "sp2a", "sp2b"]
 
-def isavailable(employee, day, time):
-    staff_in, staff_out, compare_in, compare_out = employee[day + "-hours"][0], employee[day + "-hours"][1], int(time[0]), int(time[1])
-    if not staff_in in ["O", "f", "f"]: staff_in = int(staff_in)
-    if not staff_out in ["O", "f", "f"]: staff_out = int(staff_out)
+def isavailable(emp_hours, day, time):
+    staff_in, staff_out, compare_in, compare_out = emp_hours[0], emp_hours[1], int(time[0]), int(time[1])
+    if not str(staff_in) in ["O", "f", "f"] and str(staff_in) != "Off": staff_in = int(staff_in)
+    if not str(staff_out) in ["O", "f", "f"] and str(staff_out) != "Off": staff_out = int(staff_out)
     if isinstance(staff_in, int) and isinstance(staff_out, int):
         if ((staff_in >= compare_in and staff_in < compare_out)
             or (staff_in < compare_in and staff_out > compare_out)
@@ -233,8 +234,14 @@ def create_schedule(date):
     for hour in range(1, len(weekday_template[0])):
         project_time_employees = []
         for employee in staff:
+            if "sunday" in info_date:
+                emp_hours = employee[info_date + "-hours"][info_date_selector]
+            elif info_date in ["friday", "saturday"]:
+                emp_hours = employee[info_date + "-hours"][info_date_selector_1][info_date_selector_2]
+            else:
+                emp_hours = employee[info_date + "-hours"]
             if isatlocation(employee, weekday_template, hour):
-                if isavailable(employee, info_date, compare_time[hour - 1]):
+                if isavailable(emp_hours, info_date, compare_time[hour - 1]):
                     if employee["position"] != "security" and employee["position"] != "shelver":
                         project_time_employees.append(employee["initials"])
         weekday_template[6][hour] = ",\n".join(project_time_employees)
@@ -249,7 +256,7 @@ def create_schedule(date):
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
 
-date = ["Tuesday", "January 23, 2024"]
+date = ["Wednesday", "January 24, 2024"]
 monday_info, monday_schedule = create_schedule(date)
 
 weekday = date[0]
@@ -266,6 +273,12 @@ info_width = 75
 weekday_centered = " " * int((info_width / 2) - int(len(weekday) / 2)) + weekday
 date_centered = " " * int((info_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
 
-print(weekday_centered + "\n" + date_centered)
-print(monday_info)
-print(monday_schedule)
+# print(weekday_centered.upper() + "\n" + date_centered.upper())
+# print(monday_info)
+# print(monday_schedule)
+
+print_text = weekday_centered.upper() + "\n" + date_centered.upper() + "\n" + str(monday_info) + "\n" + str(monday_schedule)
+
+f = open(join(dirname(realpath(__file__)), "schedule_preview.txt"), "w")
+f.write(print_text)
+f.close()
