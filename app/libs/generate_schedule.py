@@ -8,13 +8,24 @@ compare_time = [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 18
 location_names = ["pickup-window", "floor-lead", "sp1a", "sp1b", "sp2a", "sp2b"]
 
 def isavailable(employee, day, time):
-    staff_in, staff_out, staff_break, compare_in, compare_out = employee[day + "-hours"][0], employee[day + "-hours"][1], employee[day + "-break"][0], time[0], time[1]
-    if not isinstance(staff_break, int): staff_break = 0
+    staff_in, staff_out, compare_in, compare_out = employee[day + "-hours"][0], employee[day + "-hours"][1], int(time[0]), int(time[1])
+    if not staff_in in ["O", "f", "f"]: staff_in = int(staff_in)
+    if not staff_out in ["O", "f", "f"]: staff_out = int(staff_out)
     if isinstance(staff_in, int) and isinstance(staff_out, int):
         if ((staff_in >= compare_in and staff_in < compare_out)
             or (staff_in < compare_in and staff_out > compare_out)
             or (staff_in < compare_in and staff_out > compare_in and staff_out <= compare_out)):
             return True
+
+def isatlocation(employee, template, hour):
+    y_n = []
+    for loc in range(0, len(template)):
+        if employee["name"].split()[0].lower() in template[loc][hour].lower():
+            y_n.append("n")
+        else:
+            y_n.append("y")
+    if not "n" in y_n:
+        return True
 
 def create_schedule(date):
     info_print = PrettyTable(["    WHO'S WORKING    ", "     LUNCH BREAKS     ", "   SCHEDULE CHANGES   "])
@@ -219,9 +230,14 @@ def create_schedule(date):
     fill_template(weekday_template, date_day, staff, template)
     
     # WORKING ON THIS
-    for loc in weekday_template:
-        for hour in range(1, len(loc)):
-            print(compare_time[hour - 1][0], loc[0], loc[hour])
+    for hour in range(1, len(weekday_template[0])):
+        project_time_employees = []
+        for employee in staff:
+            if isatlocation(employee, weekday_template, hour):
+                if isavailable(employee, info_date, compare_time[hour - 1]):
+                    if employee["position"] != "security" and employee["position"] != "shelver":
+                        project_time_employees.append(employee["initials"])
+        weekday_template[6][hour] = ",\n".join(project_time_employees)
 
     for d in weekday_template:
         idx = weekday_template.index(d)
@@ -250,6 +266,6 @@ info_width = 75
 weekday_centered = " " * int((info_width / 2) - int(len(weekday) / 2)) + weekday
 date_centered = " " * int((info_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
 
-# print(weekday_centered + "\n" + date_centered)
-# print(monday_info)
-# print(monday_schedule)
+print(weekday_centered + "\n" + date_centered)
+print(monday_info)
+print(monday_schedule)

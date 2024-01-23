@@ -19,6 +19,7 @@ class Staff:
             employee["sp1b-time"] = 0
             employee["sp2a-time"] = 0
             employee["sp2b-time"] = 0
+            employee["initials"] = self.create_initials(employee)
         for employee in range(len(self.staff_list)):
             self.staff_list[employee]["rank"] = employee
     
@@ -60,6 +61,13 @@ class Staff:
                     if "am" in output_time.lower() or "pm" in output_time.lower():
                         output_time = convert_time(output_time, to_24=True)
         return output_time
+
+    def create_initials(self, employee):
+        employee_name_split = employee["name"].replace("-", " ").split()
+        employee_initials = ""
+        for i in employee_name_split:
+            employee_initials += i[0]
+        return employee_initials
 
 def convert_time(input_time, to_24):
     output_time = input_time
