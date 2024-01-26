@@ -256,7 +256,7 @@ def create_schedule(date):
 
 weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesday", "thursday", "friday1a", "friday1b", "friday2a", "friday2b", "friday3a", "friday3b", "saturday1a", "saturday1b", "saturday2a", "saturday2b", "saturday3a", "saturday3b"]
 
-date = ["Wednesday", "January 24, 2024"]
+date = ["Monday", "January 29, 2024"]
 monday_info, monday_schedule = create_schedule(date)
 
 weekday = date[0]
@@ -282,5 +282,3 @@ print(monday_schedule)
 # f = open(join(dirname(realpath(__file__)), "schedule_preview.txt"), "w")
 # f.write(print_text)
 # f.close()
-
-
