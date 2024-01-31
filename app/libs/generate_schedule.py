@@ -188,31 +188,85 @@ def create_schedule(date, requests):
         return info_lunch
 
     def fill_info_changes(info_date, requests):
+        info_changes = "LEAVE\n"
+        
         is_sunday = True if info_date == "sunday" else False
         is_friday_saturday = True if info_date == "friday" or info_date == "saturday" else False
-        leave_items = []
-        leave_items_grouped = []
-        request_items = []
-        request_items_grouped = []
-        # Make this section more like the info_hours/info_lunch
-        for l in requests[0]:
-            for employee in staff:
-                if employee["name"].split()[0].lower() == l[0]:
-                    if l[1] == 0 or l[2] == 0:
-                        leave_items.append([employee["name"].split()[0], "all day"])
-                    else:
-                        if "9" in l[1] or "10" in l[1] or "11" in l[1] or "12" in l[1]:
-                            hour_1 = convert_time(l[1] + "am", to_24=True)
-                        else:
-                            hour_1 = convert_time(l[1] + "pm", to_24=True)
-                        if "9" in l[2] or "10" in l[2] or "11" in l[2] or "12" in l[2]:
-                            hour_2 = convert_time(l[2] + "am", to_24=True)
-                        else:
-                            hour_2 = convert_time(l[2] + "pm", to_24=True)
-                        leave_items.append([employee["name"].split()[0], hour_1, hour_2])
-        print(leave_items)
+        
+        leave_hours = []
+        leave_result = []
+        programs_hours = []
+        programs_result = []
+
+        for leave in requests[0]:
+            leave_hours.append([leave[1], leave[2]])
+        
+        leave_hours = list(set(tuple(sub) for sub in leave_hours))
+        
+        for leave in leave_hours:
+            temp_employees = []
+            for leave_n in requests[0]:
+                for employee in staff:
+                    if employee["name"].split()[0].lower() == leave_n[0]:
+                        if leave[0] == leave_n[1] and leave[1] == leave_n[2]:
+                            if leave[0] == 0 or leave[1] == 0:
+                                hour_1 = "all day"
+                                hour_2 = "all day"
+                            else:
+                                hour_1 = convert_time(leave[0], to_24=True)
+                                hour_2 = convert_time(leave[1], to_24=True)
+                            temp_employees.append(employee["name"].split()[0])
+                            employee["leave"] = [hour_1, hour_2]
+            leave_result.append([[hour_1, hour_2], temp_employees])
+        
+        temp_leave_hours = []
+        for leave in leave_result:
+            if "all day" in leave[0]:
+                temp_leave_hours.append(leave)
+        for leave in leave_result:
+            if not "all day" in leave[0]:
+                temp_leave_hours.append(leave)
+        
+        leave_result = temp_leave_hours
+        
+        for slot in leave_result:
+            if slot[0][0] == "all day" or slot[0][1] == "all day":
+                info_changes += ",\n".join(slot[1]) + "\n" + "\n"
+            else:
+                hour_1 = convert_time(slot[0][0], to_24=False)
+                hour_2 = convert_time(slot[0][1], to_24=False)
+                hours = [hour_1, hour_2]
+                info_changes += "-".join(hours) + ":\n" + ",\n".join(slot[1]) + "\n" + "\n"
+        
+        info_changes += "PROGRAMS & MEETINGS\n"
+        
+        for program in requests[1]:
+            programs_hours.append([program[1], program[2]])
+        
+        programs_hours = list(set(tuple(sub) for sub in programs_hours))
+        
+        for program in programs_hours:
+            temp_employees = []
+            for program_n in requests[1]:
+                for employee in staff:
+                    if employee["name"].split()[0].lower() in program_n[0]:
+                        print(employee["name"])
+                        if program[0] == program_n[1] and program[1] == program_n[2]:
+                            hour_1 = convert_time(program[0], to_24=True)
+                            hour_2 = convert_time(program[1], to_24=True)
+                            temp_employees.append(employee["initials"])
+                            employee["program"] = [hour_1, hour_2]
+                programs_result.append([[hour_1, hour_2], temp_employees, program_n[3]])
+        
+        for slot in programs_result:
+            hour_1 = convert_time(slot[0][0], to_24=False)
+            hour_2 = convert_time(slot[0][1], to_24=False)
+            hours = [hour_1, hour_2]
+            info_changes += "-".join(hours) + ":\n" + slot[2] + "\n" + "(" + ",\n".join(slot[1]) + "\n" + "\n"
+        
+        return info_changes
     
-    fill_info_changes(info_date, requests)
+    info_changes = fill_info_changes(info_date, requests)
     # Apply the functions
     info_working = fill_info_working(info_date)
     info_lunch = fill_info_lunch(info_date)
@@ -314,8 +368,12 @@ weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesda
 
 date = ["Wednesday", "January 29, 2024"]
 requests = [
-    [["chris", 0, 0], ["yami", "9:00", "1:00"], ["rod", 0, 0]], #leave
-    [[["cat"], "11:00", "1:00", "make & create"], [["anthony"], "2:00", "3:00", "STEM"]] #programs/meetings
+    [
+        ["chris", 0, 0], ["yami", "9:00am", "1:00pm"], ["rod", 0, 0], ["michelle", "9:00am", "1:00pm"]
+    ], #leave
+    [
+        [["cat"], "11:00am", "1:00pm", "make & create"], [["anthony", "steve"], "2:00pm", "3:00pm", "STEM"]
+    ] #programs/meetings
 ]
 monday_info, monday_schedule = create_schedule(date, requests)
 
