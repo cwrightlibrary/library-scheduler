@@ -20,6 +20,8 @@ class Staff:
             employee["sp2a-time"] = 0
             employee["sp2b-time"] = 0
             employee["initials"] = self.create_initials(employee)
+            employee["leave"] = ""
+            employee["program"] = []
         for employee in range(len(self.staff_list)):
             self.staff_list[employee]["rank"] = employee
     

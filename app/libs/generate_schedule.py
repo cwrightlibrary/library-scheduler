@@ -35,6 +35,25 @@ def isatlocation(employee, template, hour):
     if not "y" in y_n:
         return True
 
+def isonleave(employee, hour):
+    if employee != "":
+        if "all day" in employee:
+            return True
+        else:
+            leave_in, leave_out, compare_in, compare_out = int(employee[0]), int(employee[1]), int(hour[0]), int(hour[1])
+            if leave_in >= compare_in and leave_out >= compare_out:
+                return True
+            if leave_in < compare_in and leave_out > compare_in and leave_out < compare_out:
+                return True
+
+def hasprogram(employee, hour):
+    if employee != "":
+        leave_in, leave_out, compare_in ,compare_out = int(employee[0]), int(employee[1]), int(hour[0]), int(hour[1])
+        if leave_in >= compare_in and leave_out >= compare_out:
+            return True
+        if leave_in < compare_in and leave_out > compare_in and leave_out < compare_out:
+            return True
+
 # This is the main function to generate the schedule
 def create_schedule(date, requests):
     # Currently for testing, this prints the schedule in the terminal as a table
@@ -282,6 +301,7 @@ def create_schedule(date, requests):
         ["SERVICE PT 1", "", "", "", "", "", ""],
         ["SERVICE PT 2", "", "", "", "", "", ""],
         ["SERVICE PT 2", "", "", "", "", "", ""],
+        ["PROGRAMS", "", "", "", "", "", ""],
         ["PROJECT TIME", "", "", "", "", "", ""]
     ]
     if "sunday" in date_day:
@@ -296,9 +316,11 @@ def create_schedule(date, requests):
                 for hour in range(len(template[day])):
                     if not "none" == template[day][hour]:
                         if not "/" in template[day][hour] and not "*" in template[day][hour]:
+                            assign_employee = ""
                             for employee in staff:
-                                if template[day][hour] == employee["name"].split()[0].lower():
-                                    assign_employee = employee["name"].split()[0]
+                                if not "all day" in employee["leave"]:
+                                    if template[day][hour] == employee["name"].split()[0].lower():
+                                        assign_employee = employee["name"].split()[0]
                             schedule[i][hour + 1] = assign_employee
                         elif "/" in template[day][hour]:
                             split_employees = template[day][hour].split("/")
@@ -315,25 +337,29 @@ def create_schedule(date, requests):
                                 weekday_hours = weekday
                             if "*" in template[day][hour]:
                                 for employee in staff:
-                                    if split_employees[0] == employee["name"].split()[0].lower():
-                                        assign_employee += employee["name"].split()[0] + " 'til " + split_hour + "\n"
+                                    if not "all day" in employee["leave"]:
+                                        if split_employees[0] == employee["name"].split()[0].lower():
+                                            assign_employee += employee["name"].split()[0] + " 'til " + split_hour + "\n"
                                 for employee in staff:
-                                    if split_employees[1] == employee["name"].split()[0].lower():
-                                        assign_employee += employee["name"].split()[0] + " at " + split_hour
+                                    if not "all day" in employee["leave"]:
+                                        if split_employees[1] == employee["name"].split()[0].lower():
+                                            assign_employee += employee["name"].split()[0] + " at " + split_hour
                             else:
                                 for employee in staff:
-                                    if not "Off" in employee[weekday_hours + "-hours"][0]:
-                                        if split_employees[0] == employee["name"].split()[0].lower():
-                                            assign_employee += employee["name"].split()[0]
-                                        if split_employees[1] == employee["name"].split()[0].lower():
-                                            assign_employee += " 'til " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " at " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False)
+                                    if not "all day" in employee["leave"]:
+                                        if not "Off" in employee[weekday_hours + "-hours"][0]:
+                                            if split_employees[0] == employee["name"].split()[0].lower():
+                                                assign_employee += employee["name"].split()[0]
+                                            if split_employees[1] == employee["name"].split()[0].lower():
+                                                assign_employee += " 'til " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False) + "\n" + employee["name"].split()[0] + " at " + convert_time(employee[weekday_hours + "-hours"][0], to_24=False)
                             schedule[i][hour + 1] = assign_employee
                         elif "*" in template[day][hour] and not "/" in template[day][hour]:
                             split_employee = template[day][hour].split("*")
                             assign_employee = ""
                             for employee in staff:
-                                if split_employee[0] == employee["name"].split()[0].lower():
-                                    assign_employee += employee["name"].split()[0] + " 'til " + split_employee[1]
+                                if not "all day" in employee["leave"]:
+                                    if split_employee[0] == employee["name"].split()[0].lower():
+                                        assign_employee += employee["name"].split()[0] + " 'til " + split_employee[1]
                             schedule[i][hour + 1] = assign_employee
                 i += 1
 
@@ -350,13 +376,14 @@ def create_schedule(date, requests):
                 emp_hours = employee[info_date + "-hours"]
             if isatlocation(employee, weekday_template, hour):
                 if isavailable(emp_hours, compare_time[hour - 1]):
-                    if employee["position"] != "security" and employee["position"] != "shelver":
-                        project_time_employees.append(employee["initials"])
-        weekday_template[6][hour] = ",\n".join(project_time_employees)
+                    if not isonleave(employee["leave"], compare_time[hour - 1]):
+                        if employee["position"] != "security" and employee["position"] != "shelver":
+                            project_time_employees.append(employee["initials"])
+        weekday_template[7][hour] = ",\n".join(project_time_employees)
 
     for d in weekday_template:
         idx = weekday_template.index(d)
-        if idx in [0, 1, 3, 5]:
+        if idx in [0, 1, 3, 5, 6]:
             schedule_print.add_row(d, divider=True)
         else:
             schedule_print.add_row(d)
@@ -367,7 +394,7 @@ weekday_names = ["sunday1", "sunday2", "sunday3", "monday", "tuesday", "wednesda
 date = ["Wednesday", "January 29, 2024"]
 requests = [
     [
-        ["chris", 0, 0], ["yami", "9:00am", "1:00pm"], ["rod", 0, 0], ["michelle", "9:00am", "1:00pm"]
+        ["chris", 0, 0], ["yami", "9:00am", "1:00pm"], ["rod", 0, 0], ["jess", "9:00am", "1:00pm"]
     ], #leave
     [
         [["cat"], "11:00am", "1:00pm", "make & create"], [["anthony", "steve"], "2:00pm", "3:00pm", "STEM"]
