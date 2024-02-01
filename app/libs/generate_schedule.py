@@ -10,7 +10,7 @@ template = TEMPLATE.schedule_template
 location_names = ["pickup-window", "floor-lead", "sp1a", "sp1b", "sp2a", "sp2b"]
 
 # This function checks whether the employee's hours to make sure they're working within a specified time-range
-def isavailable(emp_hours, day, time):
+def isavailable(emp_hours, time):
     staff_in, staff_out, compare_in, compare_out = emp_hours[0], emp_hours[1], int(time[0]), int(time[1])
     if not str(staff_in) in ["O", "f", "f"] and str(staff_in) != "Off": staff_in = int(staff_in)
     if not str(staff_out) in ["O", "f", "f"] and str(staff_out) != "Off": staff_out = int(staff_out)
@@ -245,24 +245,22 @@ def create_schedule(date, requests):
         
         programs_hours = list(set(tuple(sub) for sub in programs_hours))
         
-        for program in programs_hours:
-            temp_employees = []
-            for program_n in requests[1]:
-                for employee in staff:
-                    if employee["name"].split()[0].lower() in program_n[0]:
-                        print(employee["name"])
-                        if program[0] == program_n[1] and program[1] == program_n[2]:
-                            hour_1 = convert_time(program[0], to_24=True)
-                            hour_2 = convert_time(program[1], to_24=True)
+        for leave in programs_hours:
+            for leave_n in requests[1]:
+                if leave[0] == leave_n[1] and leave[1] == leave_n[2]:
+                    temp_employees = []
+                    hour_1 = convert_time(leave[0], to_24=True)
+                    hour_2 = convert_time(leave[1], to_24=True)
+                    for employee in staff:
+                        if employee["name"].split()[0].lower() in leave_n[0]:
                             temp_employees.append(employee["initials"])
                             employee["program"] = [hour_1, hour_2]
-                programs_result.append([[hour_1, hour_2], temp_employees, program_n[3]])
-        
+                    hour_1 = convert_time(hour_1, to_24=False)
+                    hour_2 = convert_time(hour_2, to_24=False)
+                    programs_result.append([[hour_1, hour_2], temp_employees, leave_n[3]])
         for slot in programs_result:
-            hour_1 = convert_time(slot[0][0], to_24=False)
-            hour_2 = convert_time(slot[0][1], to_24=False)
             hours = [hour_1, hour_2]
-            info_changes += "-".join(hours) + ":\n" + slot[2] + "\n" + "(" + ",\n".join(slot[1]) + "\n" + "\n"
+            info_changes += "-".join(hours) + ":\n" + slot[2] + " (" + ", ".join(slot[1]) + ")" + "\n" + "\n"
         
         return info_changes
     
@@ -351,7 +349,7 @@ def create_schedule(date, requests):
             else:
                 emp_hours = employee[info_date + "-hours"]
             if isatlocation(employee, weekday_template, hour):
-                if isavailable(emp_hours, info_date, compare_time[hour - 1]):
+                if isavailable(emp_hours, compare_time[hour - 1]):
                     if employee["position"] != "security" and employee["position"] != "shelver":
                         project_time_employees.append(employee["initials"])
         weekday_template[6][hour] = ",\n".join(project_time_employees)
