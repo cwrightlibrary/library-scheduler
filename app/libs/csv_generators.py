@@ -20,8 +20,6 @@ class Staff:
             employee["sp2a-time"] = 0
             employee["sp2b-time"] = 0
             employee["initials"] = self.create_initials(employee)
-            employee["leave"] = ""
-            employee["program"] = []
         for employee in range(len(self.staff_list)):
             self.staff_list[employee]["rank"] = employee
     
@@ -100,3 +98,44 @@ class Template:
 STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
 
 TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
+
+all_compare_times = [
+        [[1400, 1500], [1500, 1600], [1600, 1700], [1700, 1800]],
+        [[900, 1100], [1100, 1200], [1200, 1300], [1300, 1400], [1400, 1600], [1600, 1800]],
+        [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
+]
+
+all_day_locations = [
+    "sunday1PUW","sunday1FL","sunday1SP1a","sunday1SP1b","sunday1SP2a","sunday1SP2b","sunday2PUW","sunday2FL","sunday2SP1a","sunday2SP1b","sunday2SP2a","sunday2SP2b","sunday3PUW","sunday3FL","sunday3SP1a","sunday3SP1b","sunday3SP2a","sunday3SP2b","mondayPUW","mondayFL","mondaySP1a","mondaySP1b","mondaySP2a","mondaySP2b","tuesdayPUW","tuesdayFL","tuesdaySP1a","tuesdaySP1b","tuesdaySP2a","tuesdaySP2b","wednesdayPUW","wednesdayFL","wednesdaySP1a","wednesdaySP1b","wednesdaySP2a","wednesdaySP2b","thursdayPUW","thursdayFL","thursdaySP1a","thursdaySP1b","thursdaySP2a","thursdaySP2b","friday1aPUW","friday1aFL","friday1aSP1a","friday1aSP1b","friday1aSP2a","friday1aSP2b","friday1bPUW","friday1bFL","friday1bSP1a","friday1bSP1b","friday1bSP2a","friday1bSP2b","friday2aPUW","friday2aFL","friday2aSP1a","friday2aSP1b","friday2aSP2a","friday2aSP2b","friday2bPUW","friday2bFL","friday2bSP1a","friday2bSP1b","friday2bSP2a","friday2bSP2b","friday3aPUW","friday3aFL","friday3aSP1a","friday3aSP1b","friday3aSP2a","friday3aSP2b","friday3bPUW","friday3bFL","friday3bSP1a","friday3bSP1b","friday3bSP2a","friday3bSP2b","saturday1aPUW","saturday1aFL","saturday1aSP1a","saturday1aSP1b","saturday1aSP2a","saturday1aSP2b","saturday1bPUW","saturday1bFL","saturday1bSP1a","saturday1bSP1b","saturday1bSP2a","saturday1bSP2b","saturday2aPUW","saturday2aFL","saturday2aSP1a","saturday2aSP1b","saturday2aSP2a","saturday2aSP2b","saturday2bPUW","saturday2bFL","saturday2bSP1a","saturday2bSP1b","saturday2bSP2a","saturday2bSP2b","saturday3aPUW","saturday3aFL","saturday3aSP1a","saturday3aSP1b","saturday3aSP2a","saturday3aSP2b","saturday3bPUW","saturday3bFL","saturday3bSP1a","saturday3bSP1b","saturday3bSP2a","saturday3bSP2b"
+]
+for employee in STAFF.staff_list:
+    for day in all_day_locations:
+        employee[day] = []
+
+for day in TEMPLATE.schedule_template:
+    if "sunday" in day:
+        compare_time = all_compare_times[0]
+    elif "friday" in day or "saturday" in day:
+        compare_time = all_compare_times[1]
+    else:
+        compare_time = all_compare_times[2]
+    for hour in range(len(TEMPLATE.schedule_template[day])):
+        for employee in STAFF.staff_list:
+            if employee["name"].split()[0].lower() in TEMPLATE.schedule_template[day][hour]:
+                if "*" in TEMPLATE.schedule_template[day][hour]:
+                    dividing_index = TEMPLATE.schedule_template[day][hour].index("*")
+                    dividing_hour = ""
+                    for char in range(dividing_index, len(TEMPLATE.schedule_template[day][hour])):
+                        if TEMPLATE.schedule_template[day][hour][char].isdigit() or TEMPLATE.schedule_template[day][hour][char] == ":":
+                            dividing_hour += TEMPLATE.schedule_template[day][hour][char]
+                    if dividing_hour[0] == "9" or dividing_hour[0:2] in ["10", "11"]:
+                        dividing_hour += "am"
+                    else:
+                        dividing_hour += "pm"
+                    if TEMPLATE.schedule_template[day][hour].index(employee["name"].split()[0].lower()) < dividing_index:
+                        employee[day] = [compare_time[hour - 1], employee["name"].split()[0] + " 'til " + dividing_hour]
+                    else:
+                        employee[day] = [compare_time[hour - 1], employee["name"].split()[0] + " at " + dividing_hour]
+                else:
+                    employee[day] = [compare_time[hour - 1], employee["name"].split()[0]]
+
