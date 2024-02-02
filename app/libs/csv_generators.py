@@ -17,8 +17,10 @@ class Staff:
             employee["floor-lead-time"] = 0
             employee["sp1a-time"] = 0
             employee["sp1b-time"] = 0
+            employee["sp1-time"] = 0
             employee["sp2a-time"] = 0
             employee["sp2b-time"] = 0
+            employee["sp2-time"] = 0
             employee["initials"] = self.create_initials(employee)
         for employee in range(len(self.staff_list)):
             self.staff_list[employee]["rank"] = employee
@@ -133,9 +135,8 @@ for day in TEMPLATE.schedule_template:
                     else:
                         dividing_hour += "pm"
                     if TEMPLATE.schedule_template[day][hour].index(employee["name"].split()[0].lower()) < dividing_index:
-                        employee[day] = [compare_time[hour - 1], employee["name"].split()[0] + " 'til " + dividing_hour]
+                        employee[day] = [compare_time[hour], employee["name"].split()[0] + " 'til " + dividing_hour + "\n"]
                     else:
-                        employee[day] = [compare_time[hour - 1], employee["name"].split()[0] + " at " + dividing_hour]
+                        employee[day] = [compare_time[hour], employee["name"].split()[0] + " at " + dividing_hour]
                 else:
-                    employee[day] = [compare_time[hour - 1], employee["name"].split()[0]]
-
+                    employee[day] = [compare_time[hour], employee["name"].split()[0]]
