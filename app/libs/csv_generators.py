@@ -114,15 +114,16 @@ for employee in STAFF.staff_list:
     for day in all_day_locations:
         employee[day] = []
 
-for day in TEMPLATE.schedule_template:
-    if "sunday" in day:
-        compare_time = all_compare_times[0]
-    elif "friday" in day or "saturday" in day:
-        compare_time = all_compare_times[1]
-    else:
-        compare_time = all_compare_times[2]
-    for hour in range(len(TEMPLATE.schedule_template[day])):
-        for employee in STAFF.staff_list:
+for employee in STAFF.staff_list:
+    for day in TEMPLATE.schedule_template:
+        names = []
+        if "sunday" in day:
+            compare_time = all_compare_times[0]
+        elif "friday" in day or "saturday" in day:
+            compare_time = all_compare_times[1]
+        else:
+            compare_time = all_compare_times[2]
+        for hour in range(len(TEMPLATE.schedule_template[day])):
             if employee["name"].split()[0].lower() in TEMPLATE.schedule_template[day][hour]:
                 if "*" in TEMPLATE.schedule_template[day][hour]:
                     dividing_index = TEMPLATE.schedule_template[day][hour].index("*")
@@ -135,8 +136,9 @@ for day in TEMPLATE.schedule_template:
                     else:
                         dividing_hour += "pm"
                     if TEMPLATE.schedule_template[day][hour].index(employee["name"].split()[0].lower()) < dividing_index:
-                        employee[day] = [compare_time[hour], employee["name"].split()[0] + " 'til " + dividing_hour + "\n"]
+                        names.append([compare_time[hour], employee["name"].split()[0] + " 'til " + dividing_hour + "\n"])
                     else:
-                        employee[day] = [compare_time[hour], employee["name"].split()[0] + " at " + dividing_hour]
+                        names.append([compare_time[hour], employee["name"].split()[0] + " at " + dividing_hour])
                 else:
-                    employee[day] = [compare_time[hour], employee["name"].split()[0]]
+                    names.append([compare_time[hour], employee["name"].split()[0]])
+            employee[day] = names
