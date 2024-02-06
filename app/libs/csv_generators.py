@@ -110,6 +110,7 @@ all_compare_times = [
 all_day_locations = [
     "sunday1PUW","sunday1FL","sunday1SP1a","sunday1SP1b","sunday1SP2a","sunday1SP2b","sunday2PUW","sunday2FL","sunday2SP1a","sunday2SP1b","sunday2SP2a","sunday2SP2b","sunday3PUW","sunday3FL","sunday3SP1a","sunday3SP1b","sunday3SP2a","sunday3SP2b","mondayPUW","mondayFL","mondaySP1a","mondaySP1b","mondaySP2a","mondaySP2b","tuesdayPUW","tuesdayFL","tuesdaySP1a","tuesdaySP1b","tuesdaySP2a","tuesdaySP2b","wednesdayPUW","wednesdayFL","wednesdaySP1a","wednesdaySP1b","wednesdaySP2a","wednesdaySP2b","thursdayPUW","thursdayFL","thursdaySP1a","thursdaySP1b","thursdaySP2a","thursdaySP2b","friday1aPUW","friday1aFL","friday1aSP1a","friday1aSP1b","friday1aSP2a","friday1aSP2b","friday1bPUW","friday1bFL","friday1bSP1a","friday1bSP1b","friday1bSP2a","friday1bSP2b","friday2aPUW","friday2aFL","friday2aSP1a","friday2aSP1b","friday2aSP2a","friday2aSP2b","friday2bPUW","friday2bFL","friday2bSP1a","friday2bSP1b","friday2bSP2a","friday2bSP2b","friday3aPUW","friday3aFL","friday3aSP1a","friday3aSP1b","friday3aSP2a","friday3aSP2b","friday3bPUW","friday3bFL","friday3bSP1a","friday3bSP1b","friday3bSP2a","friday3bSP2b","saturday1aPUW","saturday1aFL","saturday1aSP1a","saturday1aSP1b","saturday1aSP2a","saturday1aSP2b","saturday1bPUW","saturday1bFL","saturday1bSP1a","saturday1bSP1b","saturday1bSP2a","saturday1bSP2b","saturday2aPUW","saturday2aFL","saturday2aSP1a","saturday2aSP1b","saturday2aSP2a","saturday2aSP2b","saturday2bPUW","saturday2bFL","saturday2bSP1a","saturday2bSP1b","saturday2bSP2a","saturday2bSP2b","saturday3aPUW","saturday3aFL","saturday3aSP1a","saturday3aSP1b","saturday3aSP2a","saturday3aSP2b","saturday3bPUW","saturday3bFL","saturday3bSP1a","saturday3bSP1b","saturday3bSP2a","saturday3bSP2b"
 ]
+
 for employee in STAFF.staff_list:
     for day in all_day_locations:
         employee[day] = []
@@ -142,3 +143,13 @@ for employee in STAFF.staff_list:
                 else:
                     names.append([compare_time[hour], employee["name"].split()[0]])
             employee[day] = names
+
+# This needs work
+class LOCATION:
+    def __init__(self, location_csv):
+        with open(location_csv, "r") as csv_file:
+            reader = csv.DictReader(csv_file)
+            data_list = list(reader)
+        # print(data_list)
+
+loc = LOCATION(join(dirname(realpath(__file__)), "location_info.csv"))

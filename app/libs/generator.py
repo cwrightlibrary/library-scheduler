@@ -10,7 +10,7 @@ template = TEMPLATE.schedule_template
 # Function to check if employee works during a specified timeframe
 def isavailable(employee, time):
     # Naming the employee's hours/compare time hours for readability
-    staff_in, staff_out, compare_in, compare_out = employee[0], employee[1], int(time[0]), int(time[1])
+    staff_in, staff_out, compare_in, compare_out = employee[0][0], employee[1][1], int(time[0]), int(time[1])
     # If the employee isn't off, convert the employee hours from a string to integer
     if not str(staff_in) in ["O", "f", "f", "Off"]: staff_in = int(staff_in)
     if not str(staff_out) in ["O", "f", "f", "Off"]: staff_out = int(staff_out)
@@ -25,6 +25,20 @@ def isavailable(employee, time):
             # ...The employee is available during that timeslot
             return True
 
+def isondesk(employee, day, hour):
+    y_n = []
+    for loc in all_day_locations:
+        if day in loc:
+            for shift in employee[loc]:
+                if shift[0] == hour:
+                    y_n.append("y")
+                else:
+                    y_n.append("n")
+    if "y" in y_n:
+        return True
+
+print(isondesk(staff[9], "monday", all_compare_times[2][3]))
+
 # Main function to generate the schedule
 def create_schedule(date):
     # Time slots for sunday, friday/saturday, weekdays
@@ -35,6 +49,7 @@ def create_schedule(date):
     ]
     # A list of each location name to add to the date's weekday
     location_names = ["PUW", "FL", "SP1a", "SP1b", "SP2a", "SP2b"]
+    time_at_locations = ["pickup-window-time", "floor-lead-time", "sp1a-time", "sp1b-time", "sp2a-time", "sp2b-time"]
     date_day = date[0].lower()
     # Select the correct header/time comparison
     if "sunday" in date_day:
@@ -42,16 +57,19 @@ def create_schedule(date):
         schedule_header = schedule_header_list[0]
         compare_time = all_compare_times[0]
         hour_range = [1, 5]
+        weekday = "sunday"
     elif "friday" in date_day or "saturday" in date_day:
         # If the weekday is Friday or Saturday, set the (a) header to the third element of the schedule_header_list (b) timeslot comparison to the second element of the all_compare_times list (c) the range of timeslots to 1 - 7 (there six timeslots on Fridays and Saturdays)
         schedule_header = schedule_header_list[2]
         compare_time = all_compare_times[1]
         hour_range = [1, 7]
+        weekday = "friday" if "friday" in date_day else "saturday"
     else:
         # If the weekday is Monday, Tuesday, Wednesday, or Thursday, set the (a) header to the second element of the schedule_header_list (b) timeslot comparison to the third element of the all_compare_times list (c) the range of timeslots to 1 - 7 (there six timeslots on weekdays)
         schedule_header = schedule_header_list[1]
         compare_time = all_compare_times[2]
         hour_range = [1, 7]
+        weekday = date_day.lower()
     
     # Create the PrettyTable with the header we previously selected
     schedule_print = PrettyTable(schedule_header)
@@ -78,6 +96,16 @@ def create_schedule(date):
     for loc in range(loc_range):
         # Set the dictionary value for the day/location
         day_loc = date_day + location_names[loc]
+        # Loop through each employee
+        for employee in staff:
+            #If they're at the location...
+            if len(employee[day_loc]) != 0:
+                # Add 1 to their time at that location
+                employee[time_at_locations[loc]] += 1
+                # Create the totals for SP1 times...
+                employee["sp1-time"] = employee["sp1a-time"] + employee["sp1b-time"]
+                # And SP2 times
+                employee["sp2-time"] = employee["sp2a-time"] + employee["sp2b-time"]
         # Loop through each timeslot per location
         for hour in range(hour_range[0], hour_range[1]):
             for employee in staff:
@@ -103,6 +131,21 @@ def create_schedule(date):
             if weekday_template[loc][hour][-3:-1] == "pm":
                 # ...Remove any extra new-lines to keep the schedule clean
                 weekday_template[loc][hour] = weekday_template[loc][hour][:-1]
+    # Add employees to project time by looping through the times...
+    for hour in compare_time:
+        # ... Creating a list of all employees off-desk during that hour...
+        project_time_employees = []
+        # ... Looping through the staff...
+        for employee in staff:
+            # ... Checking if the employee works that day and if they're not on desk...
+            if isavailable(employee[weekday + "-hours"], hour) and not isondesk(employee, weekday, hour):
+                # ... And if the employee isn't security, part-time, or a shelver...
+                if not employee["position"] in ["security", "part-time", "shelver"]:
+                    # ... Add them to the list
+                    project_time_employees.append(employee["initials"])
+        # Add the list to that hour's project time slot
+        weekday_template[7][compare_time.index(hour) + 1] = ", ".join(project_time_employees)
+    
     # Loop through list of locations to add to the schedule
     for d in range(len(weekday_template)):
         # Add the list element to the PrettyTable with dividing lines for formatting
