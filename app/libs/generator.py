@@ -25,28 +25,52 @@ def isavailable(employee, time):
             # ...The employee is available during that timeslot
             return True
 
+# Check if the employee is on desk
 def isondesk(employee, day, hour):
+    # A list that will store "yeses" and "nos"
     y_n = []
+    # Loop through all of the locations
     for loc in all_day_locations:
+        # If the current day is in the location name...
         if day in loc:
+            # ... Loop through the employee's shifts for that location
             for shift in employee[loc]:
+                # If the hours match...
                 if shift[0] == hour:
+                    # ... Add a "yes"...
                     y_n.append("y")
                 else:
+                    # ... Otherwise, add a "no"
                     y_n.append("n")
+    # If there's even one "yes" in the y_n list...
     if "y" in y_n:
+        # ... Return true
         return True
 
+# Combine and convert time for schedule adjustments
 def parse_leave_programs(adjustments):
+    # Create an empty list
     adjustment_employees = []
+    # Add all the hours from the adjustments
     for hours in adjustments:
         adjustment_employees.append(hours[1])
-    adjustment_employees = list(set(tuple(sorted(sub)) for sub in adjustment_employees))
+    # Remove duplicate hours
+    adjustment_employees = list(set(tuple(sub) for sub in adjustment_employees))
+    # Change the tuples to a list
     adjustment_employees = [[list(item)] for item in adjustment_employees]
+    # Loop through the hours in the list we created
     for hours in adjustment_employees:
+        # Loop through the adjustments
         for item in adjustments:
+            # If the hours match...
             if item[1] == hours[0]:
+                # ... Add names to that list
                 hours.append(item[0])
+                # If the length of the item is longer than 2 (if it's a program)...
+                if len(item) > 2:
+                    # ... Add the program name
+                    hours.append(item[2])
+    # Convert all times in the list
     for hours in adjustment_employees:
         if hours[0][0] != 0 and hours[0][1] != 0:
             hours[0][0] = int(convert_time(hours[0][0], to_24=True))
@@ -107,20 +131,49 @@ def create_schedule(date, adjustments):
         ["PROJECT TIME", "", "", "", "", "", ""]
     ]
     leave_employees = parse_leave_programs(adjustments[0])
-    print(leave_employees)
-    # leave_employees = adjustments[0]
-    # for item in leave_employees:
-    #     if item[1][0] == 0 or item[1][1] == 0:
-    #         item[1] = "all day"
-    #     else:
-    #         item[1][0] = int(convert_time(item[1][0], to_24=True))
-    #         item[1][1] = int(convert_time(item[1][1], to_24=True))
-    
-    # programs_employees = adjustments[1]
-    # for item in programs_employees:
-    #     item[1][0] = int(convert_time(item[1][0], to_24=True))
-    #     item[1][1] = int(convert_time(item[1][1], to_24=True))
-    
+    program_employees = parse_leave_programs(adjustments[1])
+
+    # Handle leave by looping through the items in leave_employees
+    for item in leave_employees:
+        # Loop through the staff
+        for employee in staff:
+            # If the employee's name is in leave_employees...
+            if employee["name"].split()[0].lower() in item[1]:
+                # ... If the employee is off all day...
+                if item[0] == "all day":
+                    # (Define their hours by date)
+                    if "sunday" in date_day:
+                        emp_hours = employee[weekday + "-hours"][info_date_selector]
+                    elif "friday" in date_day or "saturday" in date_day:
+                        emp_hours = employee[weekday + "-hours"][info_date_selector_1][info_date_selector_2]
+                    else:
+                        emp_hours = employee[weekday + "-hours"]
+                    # Set both hours to Off
+                    emp_hours[0] = "Off"
+                    emp_hours[1] = "Off"
+                    # Loop through all location names
+                    for loc in all_day_locations:
+                        # If the weekday is in the name...
+                        if weekday in loc:
+                            # ... Remove the hours
+                            employee[loc] = []
+                # If the employee isn't off all day...
+                else:
+                    # Loop through the employee's dictionary
+                    for shift in employee:
+                        # If the employee's dictionary is in the location names and the weekday is in the shift name...
+                        if shift in all_day_locations and weekday in shift:
+                            # ... Loop through all hours for that employee at that location
+                            for loc in range(len(employee[shift])):
+                                # If the employee's hours fall within the range of the leave hours... 
+                                if ((employee[shift][loc][0][0] >= item[0][0] and employee[shift][loc][0][1] <= item[0][1])
+                                    or (employee[shift][loc][0][0] < item[0][0] and employee[shift][loc][0][1] >= item[0][1])
+                                    or (employee[shift][loc][0][0] < item[0][0] and employee[shift][loc][0][1] >= item[0][0] and employee[shift][loc][0][1] <= item[0][1])):
+                                    # ... Set the employee's shift at that location to nothing
+                                    employee[shift] = []
+                                    # WORKING HERE
+                                    # employee["leave"] = 
+                                
     
     # We're going to be ignoring PROGRAMS and PROJECT TIME from the weekday_template, we'll only assign employees to location
     loc_range = 6
@@ -168,6 +221,8 @@ def create_schedule(date, adjustments):
             if weekday_template[loc][hour][-3:-1] == "pm":
                 # ...Remove any extra new-lines to keep the schedule clean
                 weekday_template[loc][hour] = weekday_template[loc][hour][:-1]
+    
+    off_desk_employees = []
     # Add employees to project time by looping through the times...
     for hour in compare_time:
         # ... Creating a list of all employees off-desk during that hour...
@@ -188,9 +243,31 @@ def create_schedule(date, adjustments):
                 if not employee["position"] in ["security", "part-time", "shelver"]:
                     # ... Add them to the list
                     project_time_employees.append(employee["initials"])
-        # Add the list to that hour's project time slot
-        weekday_template[7][compare_time.index(hour) + 1] = ", ".join(project_time_employees)
+        # Add the list to the off desk employees list
+        off_desk_employees.append(project_time_employees)
     
+    # If a service point is completely empty
+    for hour in range(len(off_desk_employees)):
+        if weekday_template[2][hour + 1] == "" and weekday_template[3][hour + 1] == "":
+            for employee in staff:
+                if employee["initials"] == off_desk_employees[hour][-1]:
+                    weekday_template[2][hour + 1] = employee["name"].split()[0]
+                    off_desk_employees[hour].pop()
+    
+    for hour in range(len(off_desk_employees)):
+        weekday_template[7][hour + 1] = ", ".join(off_desk_employees[hour])
+    
+    # If a service point's a location is empty but the b location isn't, loop through the hours of that location...
+    for hour in range(len(weekday_template[2])):
+        # ... If the location is empty but the b location isn't...
+        if weekday_template[2][hour] == "" and weekday_template[3][hour] != "":
+            # ... Change the a location to b location's value and erase the b value
+            weekday_template[2][hour] = weekday_template[3][hour]
+            weekday_template[3][hour] = ""
+        # ... 
+        if weekday_template[4][hour] == "" and weekday_template[5][hour] != "":
+            weekday_template[4][hour] = weekday_template[5][hour]
+            weekday_template[5][hour] = ""
     # Loop through list of locations to add to the schedule
     for d in range(len(weekday_template)):
         # Add the list element to the PrettyTable with dividing lines for formatting
@@ -206,8 +283,8 @@ adjustments = [
     # Leave
     [
         [["lea"], [0, 0]], 
-        [["sonaite"], ["1:00pm", "2:00pm"]],
-        [["rod"], ["1:00pm", "2:00pm"]]
+        [["sonaite"], ["1:30pm", "2:15pm"]],
+        [["alyssa"], ["11:00am", "1:00pm"]]
     ],
     # Programs/Meetings
     [
@@ -238,10 +315,10 @@ table_width = len(table_string.splitlines()[0])
 weekday_centered = " " * int((table_width / 2) - int(len(weekday) / 2)) + weekday
 # Do the same thing for the date
 date_centered = " " * int((table_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
-# # Print both the centered weekday...
-# print(weekday_centered)
-# # ...And date
-# print(date_centered)
+# Print both the centered weekday...
+print(weekday_centered)
+# ...And date
+print(date_centered)
 
-# # Print the PrettyTable to the terminal
-# print(schedule)
+# Print the PrettyTable to the terminal
+print(schedule)
