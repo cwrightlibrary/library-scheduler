@@ -10,7 +10,7 @@ template = TEMPLATE.schedule_template
 # Function to check if employee works during a specified timeframe
 def isavailable(employee, time):
     # Naming the employee's hours/compare time hours for readability
-    staff_in, staff_out, compare_in, compare_out = employee[0][0], employee[1][1], int(time[0]), int(time[1])
+    staff_in, staff_out, compare_in, compare_out = employee[0], employee[1], int(time[0]), int(time[1])
     # If the employee isn't off, convert the employee hours from a string to integer
     if not str(staff_in) in ["O", "f", "f", "Off"]: staff_in = int(staff_in)
     if not str(staff_out) in ["O", "f", "f", "Off"]: staff_out = int(staff_out)
@@ -37,10 +37,26 @@ def isondesk(employee, day, hour):
     if "y" in y_n:
         return True
 
-print(isondesk(staff[9], "monday", all_compare_times[2][3]))
+def parse_leave_programs(adjustments):
+    adjustment_employees = []
+    for hours in adjustments:
+        adjustment_employees.append(hours[1])
+    adjustment_employees = list(set(tuple(sorted(sub)) for sub in adjustment_employees))
+    adjustment_employees = [[list(item)] for item in adjustment_employees]
+    for hours in adjustment_employees:
+        for item in adjustments:
+            if item[1] == hours[0]:
+                hours.append(item[0])
+    for hours in adjustment_employees:
+        if hours[0][0] != 0 and hours[0][1] != 0:
+            hours[0][0] = int(convert_time(hours[0][0], to_24=True))
+            hours[0][1] = int(convert_time(hours[0][1], to_24=True))
+        else:
+            hours[0] = "all day"
+    return adjustment_employees
 
 # Main function to generate the schedule
-def create_schedule(date):
+def create_schedule(date, adjustments):
     # Time slots for sunday, friday/saturday, weekdays
     schedule_header_list = [
         ["", "2 - 3", "3 - 4", "4 - 5", "5 - 6"],
@@ -58,12 +74,17 @@ def create_schedule(date):
         compare_time = all_compare_times[0]
         hour_range = [1, 5]
         weekday = "sunday"
+        info_date_selector = int(date_day[len(date_day) - 1:]) - 1
     elif "friday" in date_day or "saturday" in date_day:
         # If the weekday is Friday or Saturday, set the (a) header to the third element of the schedule_header_list (b) timeslot comparison to the second element of the all_compare_times list (c) the range of timeslots to 1 - 7 (there six timeslots on Fridays and Saturdays)
         schedule_header = schedule_header_list[2]
         compare_time = all_compare_times[1]
         hour_range = [1, 7]
         weekday = "friday" if "friday" in date_day else "saturday"
+        info_date_selector_1 = int(date_day[len(date_day) - 2:len(date_day) - 1]) - 1
+        info_date_selector_2 = date_day[len(date_day) - 1:]
+        if info_date_selector_2 == "a": info_date_selector_2 = 0
+        if info_date_selector_2 == "b": info_date_selector_2 = 1
     else:
         # If the weekday is Monday, Tuesday, Wednesday, or Thursday, set the (a) header to the second element of the schedule_header_list (b) timeslot comparison to the third element of the all_compare_times list (c) the range of timeslots to 1 - 7 (there six timeslots on weekdays)
         schedule_header = schedule_header_list[1]
@@ -85,6 +106,22 @@ def create_schedule(date):
         ["PROGRAMS", "", "", "", "", "", ""],
         ["PROJECT TIME", "", "", "", "", "", ""]
     ]
+    leave_employees = parse_leave_programs(adjustments[0])
+    print(leave_employees)
+    # leave_employees = adjustments[0]
+    # for item in leave_employees:
+    #     if item[1][0] == 0 or item[1][1] == 0:
+    #         item[1] = "all day"
+    #     else:
+    #         item[1][0] = int(convert_time(item[1][0], to_24=True))
+    #         item[1][1] = int(convert_time(item[1][1], to_24=True))
+    
+    # programs_employees = adjustments[1]
+    # for item in programs_employees:
+    #     item[1][0] = int(convert_time(item[1][0], to_24=True))
+    #     item[1][1] = int(convert_time(item[1][1], to_24=True))
+    
+    
     # We're going to be ignoring PROGRAMS and PROJECT TIME from the weekday_template, we'll only assign employees to location
     loc_range = 6
     # Remove the last two timeslots for each location if the day is Sunday, because there are less hours
@@ -137,8 +174,16 @@ def create_schedule(date):
         project_time_employees = []
         # ... Looping through the staff...
         for employee in staff:
+            # Create a variable to return the hours for that day depending on the rotation calendar
+            if "sunday" in date_day:
+                emp_hours = employee[weekday + "-hours"][info_date_selector]
+            elif "friday" in date_day or "saturday" in date_day:
+                emp_hours = employee[weekday + "-hours"][info_date_selector_1][info_date_selector_2]
+            else:
+                emp_hours = employee[weekday + "-hours"]
             # ... Checking if the employee works that day and if they're not on desk...
-            if isavailable(employee[weekday + "-hours"], hour) and not isondesk(employee, weekday, hour):
+            # print(emp_hours)
+            if isavailable(emp_hours, hour) and not isondesk(employee, weekday, hour):
                 # ... And if the employee isn't security, part-time, or a shelver...
                 if not employee["position"] in ["security", "part-time", "shelver"]:
                     # ... Add them to the list
@@ -154,10 +199,25 @@ def create_schedule(date):
     return schedule_print
 
 # This is the proper date format, ["Sunday1", "January 29, 2024"] and ["Friday2b", "January 29, 2024"] will also work
-date = ["Sunday1", "January 29, 2024"]
+date = ["Monday", "January 29, 2024"]
+
+# This is the proper adjustments format, leave first, programs second. Group names into a list within each list: [[[NAMES GO HERE], [HOURS GO HERE], MEETING/PROGRAM NAME]]
+adjustments = [
+    # Leave
+    [
+        [["lea"], [0, 0]], 
+        [["sonaite"], ["1:00pm", "2:00pm"]],
+        [["rod"], ["1:00pm", "2:00pm"]]
+    ],
+    # Programs/Meetings
+    [
+        [["steve"], ["9:00am", "10:00am"], "storytime"],
+        [["chris", "anthony"], ["4:00pm", "5:00pm"], "stem"]
+    ]
+]
 
 # Create the PrettyTable schedule using the specified date
-schedule = create_schedule(date)
+schedule = create_schedule(date, adjustments)
 
 # Set a string to the weekday (if it's a weekend/friday, remove the 1a, 2b, etc.)
 if "sunday" in date[0].lower():
@@ -178,10 +238,10 @@ table_width = len(table_string.splitlines()[0])
 weekday_centered = " " * int((table_width / 2) - int(len(weekday) / 2)) + weekday
 # Do the same thing for the date
 date_centered = " " * int((table_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1]
-# Print both the centered weekday...
-print(weekday_centered)
-# ...And date
-print(date_centered)
+# # Print both the centered weekday...
+# print(weekday_centered)
+# # ...And date
+# print(date_centered)
 
-# Print the PrettyTable to the terminal
-print(schedule)
+# # Print the PrettyTable to the terminal
+# print(schedule)
