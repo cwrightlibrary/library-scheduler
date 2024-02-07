@@ -32,7 +32,7 @@ def create_schedule(date, adjustments):
     full_date = weekday_centered + "\n" + date_centered
     return schedule, full_date
 
-date = ["Tuesday", "February 6, 2024"]
+date = ["Monday", "February 6, 2024"]
 adjustments = [
     [
         [["lea"], [0, 0]], 

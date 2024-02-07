@@ -289,13 +289,14 @@ def apply_leave(leave_employees, weekday_untrimmed, weekday, emp_selector, emp_s
             if employee["name"].split()[0].lower() in item[1]:
                 if item[0] == "all day":
                     if "sunday" in weekday_untrimmed:
-                        emp_hours = employee[weekday + "-hours"][emp_selector]
+                        employee[weekday + "-hours"][emp_selector] = "Off"
+                        employee[weekday + "-hours"][emp_selector] = "Off"
                     elif "friday" in weekday_untrimmed or "saturday" in weekday_untrimmed:
-                        emp_hours = employee[weekday + "-hours"][emp_selector_1][emp_selector_2]
+                        employee[weekday + "-hours"][emp_selector_1][emp_selector_2] = "Off"
+                        employee[weekday + "-hours"][emp_selector_1][emp_selector_2] = "Off"
                     else:
-                        emp_hours = employee[weekday + "-hours"]
-                    emp_hours[0] = "Off"
-                    emp_hours[1] = "Off"
+                        employee[weekday + "-hours"] = "Off"
+                        employee[weekday + "-hours"] = "Off"
                     for loc in all_day_locations:
                         if weekday in loc:
                             employee[loc] = []
@@ -303,9 +304,10 @@ def apply_leave(leave_employees, weekday_untrimmed, weekday, emp_selector, emp_s
                     for shift in employee:
                         if shift in all_day_locations and weekday in shift:
                             for loc in range(len(employee[shift])):
-                                if compare_hours(employee[shift][loc][0][0], employee[shift][loc][0][1], item[0][0], item[0][1]):
-                                    employee[shift] = []
-                                    employee["leave"] = item[0]
+                                if len(employee[shift]) > 0:
+                                    if compare_hours(employee[shift][loc][0][0], employee[shift][loc][0][1], item[0][0], item[0][1]):
+                                        employee[shift] = []
+                                        employee["leave"] = item[0]
 
 def add_to_schedule(weekday_untrimmed, hour_range, compare_time, template):
     for loc in range(loc_range):
