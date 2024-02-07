@@ -345,3 +345,11 @@ def shift_empty_spa(template):
         if template[2][hour] == "" and template[3][hour] == "" and template[1][hour] != "":
             template[2][hour] = template[1][hour]
             template[1][hour] = ""
+
+def testing_function(weekday_untrimmed, weekday, emp_selector, emp_selector_1, emp_selector_2, template, off_desk_employees):
+    available = off_desk_employees
+    for hour in range(1, len(template[2])):
+        if template[2][hour] == "" and template[3][hour] == "":
+            if len(off_desk_employees[hour - 1]) > 1:
+                available[hour - 1].pop(0)
+                # WORKING HERE
