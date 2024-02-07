@@ -339,3 +339,9 @@ def shift_empty_spa(template):
         if template[4][hour] == "" and template[5][hour] != "":
             template[4][hour] = template[5][hour]
             template[5][hour] = ""
+        if template[2][hour] == "" and template[3][hour] == "" and template[4][hour] != "" and template[5][hour] != "":
+            template[2][hour] = template[5][hour]
+            template[5][hour] = ""
+        if template[2][hour] == "" and template[3][hour] == "" and template[1][hour] != "":
+            template[2][hour] = template[1][hour]
+            template[1][hour] = ""

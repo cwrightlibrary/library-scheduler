@@ -30,9 +30,10 @@ def create_schedule(date, adjustments):
     date_centered = " " * int((table_width / 2) - int(len(date[1].replace(",", " ")) / 2)) + date[1].title()
     
     full_date = weekday_centered + "\n" + date_centered
-    return schedule, full_date
+    return full_date, schedule
 
 date = ["Monday", "February 6, 2024"]
+
 adjustments = [
     [
         [["lea"], [0, 0]], 
@@ -44,6 +45,8 @@ adjustments = [
         [["chris", "anthony"], ["4:00pm", "5:00pm"], "stem"]
     ]
 ]
-test, full_date = create_schedule(date, adjustments)
+
+full_date, schedule = create_schedule(date, adjustments)
+
 print(full_date)
-print(test)
+print(schedule)
