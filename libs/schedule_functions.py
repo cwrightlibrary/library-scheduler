@@ -324,12 +324,26 @@ def add_to_schedule(weekday_untrimmed, hour_range, compare_time, template):
                         if isinstance(employee[k], list) and len(employee[k]) != 0:
                             for names in range(len(employee[k])):
                                 if k == day_loc and employee[k][names][0] == compare_time[hour - 1]:
-                                    template[loc][hour] += employee[k][names][1]
+                                    if employee[weekday_untrimmed + "-break"] != "None" and int(employee[weekday_untrimmed + "-break"][0]) > compare_time[hour - 1][0] and int(employee[weekday_untrimmed + "-break"][0]) < compare_time[hour - 1][1]:
+                                        if not "'til" in employee:
+                                            template[loc][hour] += employee[k][names][1] + " 'til " + convert_time(employee[weekday_untrimmed + "-break"][0], to_24=False)
+                                    else:
+                                        template[loc][hour] += employee[k][names][1]
                         else:
                             if k == day_loc and employee[k][0] == compare_time[hour - 1]:
+                                if employee["name"] == "Alyssa Pastore":
+                                    print(employee[weekday_untrimmed + "-break"])
                                 template[loc][hour] += employee[k][1]
-            if template[loc][hour][-3:-1] == "pm":
-                template[loc][hour] = template[loc][hour][:-1]
+            template[loc][hour] = template[loc][hour].replace("pm", "")
+            before_string = "\n 'til"
+            if "\n 'til " in template[loc][hour]:
+                before_string_index = template[loc][hour].index("\n 'til ") + 6
+                for char in range(before_string_index, len(template[loc][hour])):
+                    if template[loc][hour][char].isdigit() or template[loc][hour][char].isspace():
+                        before_string += template[loc][hour][char]
+                    if template[loc][hour][char].isalpha():
+                        break
+            template[loc][hour] = template[loc][hour].replace(before_string, "\n")
 
 def shift_empty_spa(template):
     for hour in range(len(template[2])):
@@ -346,10 +360,36 @@ def shift_empty_spa(template):
             template[2][hour] = template[1][hour]
             template[1][hour] = ""
 
-def testing_function(weekday_untrimmed, weekday, emp_selector, emp_selector_1, emp_selector_2, template, off_desk_employees):
-    available = off_desk_employees
+def off_desk_to_empty(template, off_desk_employees, sp):
+    if sp == "sp1":
+        sp_hour1 = 2
+        sp_hour2 = 3
+    elif sp == "sp2":
+        sp_hour1 = 4
+        sp_hour2 = 5
+    elif sp == "pickup-window":
+        sp_hour1 = 0
+        sp_hour2 = 0
+        sp = "pickup-window"
+    available = []
+    for hour in off_desk_employees:
+        temp = []
+        for ins in hour:
+            for employee in staff:
+                if employee["initials"] == ins:
+                    temp.append(employee)
+        available.append(temp)
     for hour in range(1, len(template[2])):
-        if template[2][hour] == "" and template[3][hour] == "":
-            if len(off_desk_employees[hour - 1]) > 1:
-                available[hour - 1].pop(0)
-                # WORKING HERE
+        if template[sp_hour1][hour] == "" and template[sp_hour2][hour] == "":
+            available[hour - 1] = sorted(available[hour - 1], key=lambda d: d[sp + "-time"], reverse=True)
+            if len(available[hour - 1]) > 0:
+                chosen = 0
+                chosen_employee = available[hour - 1][chosen]
+                template[sp_hour1][hour] = chosen_employee["name"].split()[0]
+                chosen_employee[sp + "-time"] += 1
+                for ins in off_desk_employees[hour - 1]:
+                    if ins == chosen_employee["initials"]:
+                        off_desk_employees[hour - 1].remove(ins)
+
+def testing_function():
+    pass

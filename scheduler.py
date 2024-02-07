@@ -1,4 +1,4 @@
-from libs.schedule_functions import isavailable, isondesk, compare_hours, create_project_time, sort_adjustments, create_schedule_info, create_schedule_template, apply_leave, add_to_schedule, shift_empty_spa, testing_function
+from libs.schedule_functions import isavailable, isondesk, compare_hours, create_project_time, sort_adjustments, create_schedule_info, create_schedule_template, apply_leave, add_to_schedule, shift_empty_spa, off_desk_to_empty, testing_function
 from prettytable import PrettyTable
 
 def create_schedule(date, adjustments):
@@ -18,7 +18,9 @@ def create_schedule(date, adjustments):
     
     shift_empty_spa(template)
     
-    testing_function(weekday_untrimmed, weekday, emp_selector, emp_selector_1, emp_selector_2, template, off_desk_employees)
+    off_desk_to_empty(template, off_desk_employees, "pickup-window")
+    off_desk_to_empty(template, off_desk_employees, "sp1")
+    off_desk_to_empty(template, off_desk_employees, "sp2")
     
     for hour in range(len(off_desk_employees)):
         template[7][hour + 1] = ", ".join(off_desk_employees[hour])
@@ -48,7 +50,14 @@ adjustments = [
     ]
 ]
 
-# adjustments = [[], []]
+adjustments = [
+    [
+        # [["lea", "janet", "lindsey", "yami", "steve", "michelle"], [0, 0]]
+    ],
+    [
+        
+    ]
+]
 
 full_date, schedule = create_schedule(date, adjustments)
 
