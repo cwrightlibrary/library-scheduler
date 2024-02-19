@@ -22,6 +22,8 @@ def create_schedule(date, adjustments):
     off_desk_to_empty(template, off_desk_employees, "sp1")
     off_desk_to_empty(template, off_desk_employees, "sp2")
     
+    testing_function(template, program_employees)
+    
     for hour in range(len(off_desk_employees)):
         template[7][hour + 1] = ", ".join(off_desk_employees[hour])
     
@@ -36,7 +38,7 @@ def create_schedule(date, adjustments):
     full_date = weekday_centered + "\n" + date_centered
     return full_date, schedule
 
-date = ["Monday", "February 6, 2024"]
+date = ["Tuesday", "February 6, 2024"]
 
 adjustments = [
     [
@@ -50,14 +52,14 @@ adjustments = [
     ]
 ]
 
-adjustments = [
-    [
-        # [["lea", "janet", "lindsey", "yami", "steve", "michelle"], [0, 0]]
-    ],
-    [
+# adjustments = [
+#     [
+#         # [["lea", "janet", "lindsey", "yami", "steve", "michelle"], [0, 0]]
+#     ],
+#     [
         
-    ]
-]
+#     ]
+# ]
 
 full_date, schedule = create_schedule(date, adjustments)
 

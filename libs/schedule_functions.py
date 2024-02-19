@@ -310,6 +310,7 @@ def apply_leave(leave_employees, weekday_untrimmed, weekday, emp_selector, emp_s
                                         employee["leave"] = item[0]
 
 def add_to_schedule(weekday_untrimmed, hour_range, compare_time, template):
+    _, __, ___, ____, emp_selector, emp_selector_1, emp_selector_2 = create_schedule_info(weekday_untrimmed)
     for loc in range(loc_range):
         day_loc = weekday_untrimmed + location_names[loc]
         for employee in staff:
@@ -319,20 +320,28 @@ def add_to_schedule(weekday_untrimmed, hour_range, compare_time, template):
                 employee["sp2-time"] = employee["sp2a-time"] + employee["sp2b-time"]
         for hour in range(hour_range[0], hour_range[1]):
             for employee in staff:
+                if "sunday" in weekday_untrimmed:
+                    emp_break = employee["sunday-break"][emp_selector]
+                elif "friday" in weekday_untrimmed:
+                    emp_break = employee["friday-break"][emp_selector_1][emp_selector_2]
+                elif "saturday" in weekday_untrimmed:
+                    emp_break = employee["saturday-break"][emp_selector_1][emp_selector_2]
+                else:
+                    emp_break = employee[weekday_untrimmed + "-break"]
                 if len(employee[day_loc]) != 0:
                     for k, v in employee.items():
                         if isinstance(employee[k], list) and len(employee[k]) != 0:
                             for names in range(len(employee[k])):
                                 if k == day_loc and employee[k][names][0] == compare_time[hour - 1]:
-                                    if employee[weekday_untrimmed + "-break"] != "None" and int(employee[weekday_untrimmed + "-break"][0]) > compare_time[hour - 1][0] and int(employee[weekday_untrimmed + "-break"][0]) < compare_time[hour - 1][1]:
+                                    if emp_break != "None" and int(emp_break[0]) > compare_time[hour - 1][0] and int(emp_break[0]) < compare_time[hour - 1][1]:
                                         if not "'til" in employee:
-                                            template[loc][hour] += employee[k][names][1] + " 'til " + convert_time(employee[weekday_untrimmed + "-break"][0], to_24=False)
+                                            template[loc][hour] += employee[k][names][1] + " 'til " + convert_time(emp_break[0], to_24=False)
                                     else:
                                         template[loc][hour] += employee[k][names][1]
                         else:
                             if k == day_loc and employee[k][0] == compare_time[hour - 1]:
                                 if employee["name"] == "Alyssa Pastore":
-                                    print(employee[weekday_untrimmed + "-break"])
+                                    print(emp_break)
                                 template[loc][hour] += employee[k][1]
             template[loc][hour] = template[loc][hour].replace("pm", "")
             before_string = "\n 'til"
@@ -391,5 +400,10 @@ def off_desk_to_empty(template, off_desk_employees, sp):
                     if ins == chosen_employee["initials"]:
                         off_desk_employees[hour - 1].remove(ins)
 
-def testing_function():
-    pass
+def testing_function(template, program_employees):
+    for program in program_employees:
+        hour_1, hour_2 = convert_time(program[0][0], to_24=False), convert_time(program[0][1], to_24=False)
+        program_name = program[2].title()
+        if program_name == "Stem":
+            program_name = program_name.upper()
+        print(hour_1, hour_2, program_name)
