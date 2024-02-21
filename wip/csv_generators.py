@@ -87,6 +87,17 @@ class Template:
             if "DEL" in self.schedule_template[i]:
                 self.schedule_template[i].pop()
                 self.schedule_template[i].pop()
+        self.all_compare_times = [
+            [[1400, 1500], [1500, 1600], [1600, 1700], [1700, 1800]],
+            [[900, 1100], [1100, 1200], [1200, 1300], [1300, 1400], [1400, 1600], [1600, 1800]],
+            [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
+        ]
+        self.schedule_header_list = [
+            ["", "2 - 3", "3 - 4", "4 - 5", "5 - 6"],
+            ["", "9 - 11", "11 - 12", "12 - 1", "1 - 2", "2 - 4", "4 - 6"],
+            ["", "9 - 11", "11 - 1", "1 - 2", "2 - 4", "4 - 6", "6 - 8"]
+        ]
+        self.hour_ranges = [[1, 5], [1, 7]]
 
 def convert_time(input_time, to_24):
     output_time = input_time
@@ -113,4 +124,4 @@ LOCATION = Location(join(dirname(realpath(__file__)), "location_info.csv"))
 
 staff = STAFF.staff_list
 template = TEMPLATE.schedule_template
-location = LOCATION.location_info
+location = LOCATION
