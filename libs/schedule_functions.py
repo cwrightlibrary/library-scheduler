@@ -166,15 +166,15 @@ for employee in STAFF.staff_list:
                     names.append([compare_time[hour], employee["name"].split()[0]])
             employee[day] = names
 
-# This needs work
-class LOCATION:
+class Location:
     def __init__(self, location_csv):
         with open(location_csv, "r") as csv_file:
             reader = csv.DictReader(csv_file)
-            data_list = list(reader)
-        # print(data_list)
+            temp_info = [row for row in reader]
+            self.location_info = temp_info[0]
 
-loc = LOCATION(join(dirname(realpath(__file__)), "location_info.csv"))
+LOCATION = Location(join(dirname(realpath(__file__)), "location_info.csv"))
+
 
 staff = STAFF.staff_list
 template = TEMPLATE.schedule_template

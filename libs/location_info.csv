@@ -1,2 +1,2 @@
-locationName,sundayHours,mondayHours,tuesdayHours,wednesdayHours,thursdayHours,fridayHours,saturdayHours
-St. Andrews,2pm-6pm,9am-8pm,9am-8pm,9am-8pm,9am-8pm,9am-6pm,9am-6pm
+location-name,sunday-hours,monday-hours,tuesday-hours,wednesday-hours,thursday-hours,friday-hours,saturday-hours,floor-locations
+St. Andrews,2:00pm-6:00pm,9:00am-8:00pm,9:00am-8:00pm,9:00am-8:00pm,9:00am-8:00pm,9:00am-6:00pm,9:00am-6pm,pickup-window/floor-lead/service-point-1a/service-point-1b/service-point-2a/service-point-2b
