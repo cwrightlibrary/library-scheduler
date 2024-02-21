@@ -2,6 +2,7 @@ from csv_generators import staff, template, location, convert_time
 from datetime import *
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
+from docx.enum.section import WD_ORIENT
 from os.path import dirname, join, realpath
 from prettytable import PrettyTable
 
@@ -28,7 +29,6 @@ class Schedule:
         self.get_hours_locations()
         self.create_header_compare()
         self.add_to_schedule()
-        self.generate_word_doc()
     
     def get_hours_locations(self):
         # Loop through the imported location csv's info dictionary
@@ -56,16 +56,20 @@ class Schedule:
     def create_header_compare(self):
         for k, v in self.branch_hours.items():
             if self.weekday == k:
+                self.today_hours = v
                 # If the hours are 2-6, set the appropriate header/compare_time
                 if v == [1400, 1800]:
+                    self.word_doc = join(dirname(realpath(__file__)), "templates", "two_six_template.docx")
                     self.template_header = ["", "2 - 3", "3 - 4", "4 - 5", "5 - 6"]
                     self.compare_time = [[1400, 1500], [1500, 1600], [1600, 1700], [1700, 1800]]
                 # If the hours are 9-6, set the appropriate header/compare_time
                 elif v == [900, 1800]:
+                    self.word_doc = join(dirname(realpath(__file__)), "templates", "nine_six_template.docx")
                     self.template_header = ["", "9 - 11", "11 - 12", "12 - 1", "1 - 2", "2 - 4", "4 - 6"]
                     self.compare_time = [[900, 1100], [1100, 1200], [1200, 1300], [1300, 1400], [1400, 1600], [1600, 1800]]
                 # If the hours are 9-8, set the appropriate header/compare_time
                 elif v == [900, 2000]:
+                    self.word_doc = join(dirname(realpath(__file__)), "templates", "nine_eight_template.docx")
                     self.template_header = ["", "9 - 11", "11 - 1", "1 - 2", "2 - 4", "4 - 6", "6 - 8"]
                     self.compare_time = [[900, 1100], [1100, 1300], [1300, 1400], [1400, 1600], [1600, 1800], [1800, 2000]]
         
@@ -102,34 +106,28 @@ class Schedule:
         print(self.print_info)
         print(self.print_template)
     
-    def generate_word_doc(self):
-        blue_dark = "#007e9e"
-        blue_med = "#378fba"
-        blue_light = "#f2f8fa"
-        green_dark = "#679a44"
-        green_med = "#679a44"
-        green_light = "#f6faf2"
+    def change_doc(self):
+        black = RGBColor(20, 20, 20)
+        aptos = "Aptos"
+        aptos_display = "Aptos Display"
         
-        self.word_doc = Document()
+        self.document = Document(self.word_doc)
         
-        heading1 = self.word_doc.styles["Heading 1"]
-        heading1.font.name = "Aptos Display"
-        heading1.font.size = Pt(16)
+        self.document.paragraphs[0].text = self.weekday + ", " + self.date
+        self.document.paragraphs[0].runs[0].font.name = aptos_display
+        self.document.paragraphs[0].runs[0].font.color.rgb = black
         
-        self.word_doc.add_heading(self.weekday)
-        self.word_doc.add_heading(self.date)
-    
-    def save_doc(self, location):
-        self.word_doc.save(location)
+        self.document.save(join(dirname(realpath(__file__)), "test.docx"))
 
-date = "February 21, 2024"
+# date = "February 22, 2024"
+date = datetime.today().strftime("%B %d, %Y")
 
 adjustments = [
     [
-        
+        # leave
     ],
     [
-        
+        # programs and meetings
     ]
 ]
 
@@ -137,4 +135,4 @@ daily_schedule = Schedule(date, adjustments)
 
 daily_schedule.pretty_print()
 
-daily_schedule.save_doc(join(dirname(realpath(__file__)), "test.docx"))
+daily_schedule.change_doc()

@@ -118,9 +118,9 @@ class Location:
             temp_info = [row for row in reader]
             self.location_info = temp_info[0]
 
-STAFF = Staff(join(dirname(realpath(__file__)), "staff_info.csv"))
-TEMPLATE = Template(join(dirname(realpath(__file__)), "template_info.csv"))
-LOCATION = Location(join(dirname(realpath(__file__)), "location_info.csv"))
+STAFF = Staff(join(dirname(realpath(__file__)), "csvs", "staff_info.csv"))
+TEMPLATE = Template(join(dirname(realpath(__file__)), "csvs", "template_info.csv"))
+LOCATION = Location(join(dirname(realpath(__file__)), "csvs", "location_info.csv"))
 
 staff = STAFF.staff_list
 template = TEMPLATE.schedule_template
