@@ -119,8 +119,8 @@ class Schedule:
         
         self.document.save(join(dirname(realpath(__file__)), "test.docx"))
 
-# date = "February 22, 2024"
-date = datetime.today().strftime("%B %d, %Y")
+date = "February 22, 2024"
+# date = datetime.today().strftime("%B %d, %Y")
 
 adjustments = [
     [

@@ -5,7 +5,7 @@ import csv
 class LocationName(CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.label = CTkLabel(self, text="enter the name of your library branch")
+        self.label = CTkLabel(self, text="Configure Location")
         self.label.grid(row=0, column=0, padx=10, pady=10, sticky="new")
         
         self.entry = CTkEntry(self, placeholder_text="Location Name")
@@ -14,67 +14,67 @@ class LocationName(CTkFrame):
 class LocationHours(CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.sunday_label = CTkLabel(self, text="sunday")
+        self.sunday_label = CTkLabel(self, text="Sunday")
         self.sunday_label.grid(row=0, column=0, padx=10, pady=10, sticky="new")
-        self.sunday_input = CTkEntry(self, placeholder_text="Closed")
+        self.sunday_input = CTkEntry(self, placeholder_text="Closed", width=80)
         self.sunday_input.grid(row=0, column=1, padx=10, pady=10, sticky="new")
         self.sunday_input2 = CTkEntry(self, placeholder_text="Closed")
         self.sunday_input2.grid(row=0, column=2, padx=10, pady=10, sticky="new")
         
-        self.monday_label = CTkLabel(self, text="monday")
+        self.monday_label = CTkLabel(self, text="Monday")
         self.monday_label.grid(row=1, column=0, padx=10, pady=10, sticky="new")
-        self.monday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.monday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.monday_input.grid(row=1, column=1, padx=10, pady=10, sticky="new")
-        self.monday_input2 = CTkEntry(self, placeholder_text="8:00pm")
+        self.monday_input2 = CTkEntry(self, placeholder_text="8:00pm", width=80)
         self.monday_input2.grid(row=1, column=2, padx=10, pady=10, sticky="new")
         
-        self.tuesday_label = CTkLabel(self, text="tuesday")
+        self.tuesday_label = CTkLabel(self, text="Tuesday")
         self.tuesday_label.grid(row=2, column=0, padx=10, pady=10, sticky="new")
-        self.tuesday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.tuesday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.tuesday_input.grid(row=2, column=1, padx=10, pady=10, sticky="new")
-        self.tuesday_input2 = CTkEntry(self, placeholder_text="8:00pm")
+        self.tuesday_input2 = CTkEntry(self, placeholder_text="8:00pm", width=80)
         self.tuesday_input2.grid(row=2, column=2, padx=10, pady=10, sticky="new")
         
-        self.wednesday_label = CTkLabel(self, text="wednesday")
+        self.wednesday_label = CTkLabel(self, text="Wednesday")
         self.wednesday_label.grid(row=3, column=0, padx=10, pady=10, sticky="new")
-        self.wednesday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.wednesday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.wednesday_input.grid(row=3, column=1, padx=10, pady=10, sticky="new")
-        self.wednesday_input2 = CTkEntry(self, placeholder_text="8:00pm")
+        self.wednesday_input2 = CTkEntry(self, placeholder_text="8:00pm", width=80)
         self.wednesday_input2.grid(row=3, column=2, padx=10, pady=10, sticky="new")
         
-        self.thursday_label = CTkLabel(self, text="thursday")
+        self.thursday_label = CTkLabel(self, text="Thursday")
         self.thursday_label.grid(row=4, column=0, padx=10, pady=10, sticky="new")
-        self.thursday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.thursday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.thursday_input.grid(row=4, column=1, padx=10, pady=10, sticky="new")
-        self.thursday_input2 = CTkEntry(self, placeholder_text="8:00pm")
+        self.thursday_input2 = CTkEntry(self, placeholder_text="8:00pm", width=80)
         self.thursday_input2.grid(row=4, column=2, padx=10, pady=10, sticky="new")
         
-        self.friday_label = CTkLabel(self, text="friday")
+        self.friday_label = CTkLabel(self, text="Friday")
         self.friday_label.grid(row=5, column=0, padx=10, pady=10, sticky="new")
-        self.friday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.friday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.friday_input.grid(row=5, column=1, padx=10, pady=10, sticky="new")
-        self.friday_input2 = CTkEntry(self, placeholder_text="6:00pm")
+        self.friday_input2 = CTkEntry(self, placeholder_text="6:00pm", width=80)
         self.friday_input2.grid(row=5, column=2, padx=10, pady=10, sticky="new")
         
-        self.saturday_label = CTkLabel(self, text="saturday")
+        self.saturday_label = CTkLabel(self, text="Saturday")
         self.saturday_label.grid(row=6, column=0, padx=10, pady=10, sticky="new")
-        self.saturday_input = CTkEntry(self, placeholder_text="9:00am")
+        self.saturday_input = CTkEntry(self, placeholder_text="9:00am", width=80)
         self.saturday_input.grid(row=6, column=1, padx=10, pady=10, sticky="new")
-        self.saturday_input2 = CTkEntry(self, placeholder_text="6:00pm")
+        self.saturday_input2 = CTkEntry(self, placeholder_text="6:00pm", width=80)
         self.saturday_input2.grid(row=6, column=2, padx=10, pady=10, sticky="new")
 
 class FloorLocations(CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.puw = CTkCheckBox(self, text="pickup window")
+        self.puw = CTkCheckBox(self, text="Pickup Window")
         self.puw.grid(row=0, column=0, padx=10, pady=10, sticky="new")
         self.puw.toggle()
         
-        self.floor_lead = CTkCheckBox(self, text="floor lead")
+        self.floor_lead = CTkCheckBox(self, text="Floor Lead")
         self.floor_lead.grid(row=1, column=0, padx=10, pady=10, sticky="new")
         self.floor_lead.toggle()
         
-        self.sp1a = CTkCheckBox(self, text="service point 1a")
+        self.sp1a = CTkCheckBox(self, text="Service Point 1a")
         self.sp1a.grid(row=2, column=0, padx=10, pady=10, sticky="new")
         self.sp1a.toggle()
         
@@ -86,7 +86,7 @@ class FloorLocations(CTkFrame):
         self.sp2a.grid(row=4, column=0, padx=10, pady=10, sticky="new")
         self.sp2a.toggle()
         
-        self.sp2b = CTkCheckBox(self, text="service point 2b")
+        self.sp2b = CTkCheckBox(self, text="Service Point 2b")
         self.sp2b.grid(row=5, column=0, padx=10, pady=10, sticky="new")
         self.sp2b.toggle()
         
@@ -95,8 +95,10 @@ class App(CTk):
     def __init__(self):
         super().__init__()
         
-        self.title("scheduler")
+        self.title("Scheduler")
         self.geometry("650x525")
+        set_default_color_theme(join(dirname(realpath(__file__)), "dark-library-blue.json"))
+        
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure(0, weight=1)
         
@@ -115,7 +117,7 @@ class App(CTk):
         self.floor_locations = FloorLocations(self)
         self.floor_locations.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
         
-        self.button = CTkButton(self, text="confirm", command=self.button_callback)
+        self.button = CTkButton(self, text="Confirm", command=self.button_callback)
         self.button.grid(row=2, column=0, padx=10, pady=10, sticky="nsew", columnspan=2)
         
     def button_callback(self):
