@@ -132,16 +132,31 @@ class Template:
             if "DEL" in self.schedule_template[i]:
                 self.schedule_template[i].pop()
                 self.schedule_template[i].pop()
-                
+
         self.a_weekend_1 = "February 23, 2024"
-        self.a_weekend_2 = datetime.strftime(datetime.strptime(self.a_weekend_1, "%B %d, %Y") + timedelta(days=21), "%B %d, %Y")
-        
-        self.b_weekend_1 = datetime.strftime(datetime.strptime(self.a_weekend_1, "%B %d, %Y") + timedelta(days=7), "%B %d, %Y")
-        self.b_weekend_2 = datetime.strftime(datetime.strptime(self.b_weekend_1, "%B %d, %Y") + timedelta(days=21), "%B %d, %Y")
-        
-        self.c_weekend_1 = datetime.strftime(datetime.strptime(self.b_weekend_1, "%B %d, %Y") + timedelta(days=14), "%B %d, %Y")
-        self.c_weekend_2 = datetime.strftime(datetime.strptime(self.c_weekend_1, "%B %d, %Y") + timedelta(days=21), "%B %d, %Y")
-        
+        self.a_weekend_2 = datetime.strftime(
+            datetime.strptime(self.a_weekend_1, "%B %d, %Y") + timedelta(days=21),
+            "%B %d, %Y",
+        )
+
+        self.b_weekend_1 = datetime.strftime(
+            datetime.strptime(self.a_weekend_1, "%B %d, %Y") + timedelta(days=7),
+            "%B %d, %Y",
+        )
+        self.b_weekend_2 = datetime.strftime(
+            datetime.strptime(self.b_weekend_1, "%B %d, %Y") + timedelta(days=21),
+            "%B %d, %Y",
+        )
+
+        self.c_weekend_1 = datetime.strftime(
+            datetime.strptime(self.b_weekend_1, "%B %d, %Y") + timedelta(days=14),
+            "%B %d, %Y",
+        )
+        self.c_weekend_2 = datetime.strftime(
+            datetime.strptime(self.c_weekend_1, "%B %d, %Y") + timedelta(days=21),
+            "%B %d, %Y",
+        )
+
         self.all_compare_times = [
             [[1400, 1500], [1500, 1600], [1600, 1700], [1700, 1800]],
             [

@@ -34,9 +34,10 @@ class Schedule:
         self.get_hours_locations()
         self.create_header_compare()
         self.get_leave_and_programs()
-        
+
         self.get_weekday()
-        
+        self.get_daily_hours()
+
         self.add_to_schedule()
 
     def get_hours_locations(self):
@@ -162,26 +163,161 @@ class Schedule:
                     if employee["name-shorthand"] == self.programs_print[p][0][name]:
                         self.programs_print[p][0][name] = employee["initials"]
             self.programs_print[p][2] = self.programs_print[p][2].title()
-        
+
         leave_string = "leave\n"
         programs_string = "programs\n"
         for info in self.leave_print:
             if 0 in info[1]:
                 leave_string += ", ".join(info[0]) + "\n"
             else:
-                leave_string += "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "") + ": "
+                leave_string += (
+                    "-".join(info[1])
+                    .replace("am", "")
+                    .replace("pm", "")
+                    .replace(":00", "")
+                    + ": "
+                )
                 leave_string += ", ".join(info[0]) + "\n"
         for info in self.programs_print:
-            programs_string += "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "") + ": " + info[2] + " "
+            programs_string += (
+                "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "")
+                + ": "
+                + info[2]
+                + " "
+            )
             programs_string += "(" + ", ".join(info[0]) + ")\n"
         self.print_info.add_row(["", "", leave_string + "\n" + programs_string])
-    
+
     def get_weekday(self):
-        friday1a, friday1b, friday2a, friday2b, friday3a, friday3b, saturday1a, saturday1b, saturday2a, saturday2b, saturday3a, saturday3b, sunday1, sunday2, sunday3 = [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
-    
+        self.current_date = []
+
+        def add_to_day(day, amount):
+            return datetime.strftime(
+                datetime.strptime(day, "%B %d, %Y") + timedelta(days=amount),
+                "%B %d, %Y",
+            )
+
+        (
+            friday1a,
+            friday1b,
+            friday2a,
+            friday2b,
+            friday3a,
+            friday3b,
+            saturday1a,
+            saturday1b,
+            saturday2a,
+            saturday2b,
+            saturday3a,
+            saturday3b,
+            sunday1,
+            sunday2,
+            sunday3,
+        ) = (
+            [TEMPLATE.a_weekend_1],
+            [TEMPLATE.a_weekend_2],
+            [TEMPLATE.b_weekend_1],
+            [TEMPLATE.b_weekend_2],
+            [TEMPLATE.c_weekend_1],
+            [TEMPLATE.c_weekend_2],
+            [add_to_day(TEMPLATE.a_weekend_1, 1)],
+            [add_to_day(TEMPLATE.a_weekend_2, 1)],
+            [add_to_day(TEMPLATE.b_weekend_1, 1)],
+            [add_to_day(TEMPLATE.b_weekend_2, 1)],
+            [add_to_day(TEMPLATE.c_weekend_1, 1)],
+            [add_to_day(TEMPLATE.c_weekend_2, 1)],
+            [add_to_day(TEMPLATE.a_weekend_1, 2)],
+            [add_to_day(TEMPLATE.b_weekend_1, 2)],
+            [add_to_day(TEMPLATE.c_weekend_1, 2)],
+        )
+        weekends = [
+            friday1a,
+            friday1b,
+            friday2a,
+            friday2b,
+            friday3a,
+            friday3b,
+            saturday1a,
+            saturday1b,
+            saturday2a,
+            saturday2b,
+            saturday3a,
+            saturday3b,
+            sunday1,
+            sunday2,
+            sunday3,
+        ]
+        for day in weekends:
+            for amt in range(0, 500):
+                three_weeks = amt * 21
+                day.append(add_to_day(day[0], three_weeks))
+        for day in range(len(weekends)):
+            if self.date in weekends[day]:
+                if day == 0:
+                    self.current_date = ["friday-hours", 0, 0]
+                if day == 1:
+                    self.current_date = ["friday-hours", 0, 1]
+                if day == 2:
+                    self.current_date = ["friday-hours", 1, 0]
+                if day == 3:
+                    self.current_date = ["friday-hours", 1, 1]
+                if day == 4:
+                    self.current_date = ["friday-hours", 2, 0]
+                if day == 5:
+                    self.current_date = ["friday-hours", 2, 1]
+                if day == 6:
+                    self.current_date = ["saturday-hours", 0, 0]
+                if day == 7:
+                    self.current_date = ["saturday-hours", 0, 1]
+                if day == 8:
+                    self.current_date = ["saturday-hours", 1, 0]
+                if day == 9:
+                    self.current_date = ["saturday-hours", 1, 1]
+                if day == 10:
+                    self.current_date = ["saturday-hours", 2, 0]
+                if day == 11:
+                    self.current_date = ["saturday-hours", 2, 1]
+                if day == 12:
+                    self.current_date = ["sunday-hours", 0]
+                if day == 13:
+                    self.current_date = ["sunday-hours", 1]
+                if day == 14:
+                    self.current_date = ["sunday-hours", 2]
+        if self.weekday.lower() not in ["friday", "saturday", "sunday"]:
+            self.current_date = self.weekday.lower() + "-hours"
+
     def get_daily_hours(self):
         hours = []
         hours_string = ""
+        for employee in staff:
+            if self.weekday.lower() in ["friday", "saturday"]:
+                employee_hours = employee[self.current_date[0]][self.current_date[1]][
+                    self.current_date[2]
+                ]
+            elif self.weekday.lower() == "sunday":
+                employee_hours = employee[self.current_date[0]][self.current_date[1]]
+            else:
+                employee_hours = employee[self.current_date]
+            if employee_hours != "Off" and employee_hours not in hours:
+                hours.append(employee_hours)
+            for hour in hours:
+                if employee_hours[0] == hour[0] and employee_hours[1] == hour[1]:
+                    hour.append(employee["name"].split()[0])
+        for hour in hours:
+            hour[0] = (
+                convert_time(hour[0], to_24=False)
+                + "-"
+                + convert_time(hour[1], to_24=False)
+                + ":\n"
+            )
+            hour.pop(1)
+            for names in range(1, len(hour)):
+                emp_names = []
+                emp_names.append(hour[names])
+            hour[1] = emp_names
+            while len(hour) > 2:
+                hour.pop()
+            # TODO: create the hours_string
 
     def add_to_schedule(self):
         # Create list for all available location/hour slots
@@ -231,7 +367,7 @@ class Schedule:
         self.document.save(join(dirname(realpath(__file__)), "test.docx"))
 
 
-date = "March 1, 2024"
+date = "March 01, 2024"
 # date = datetime.today().strftime("%B %d, %Y")
 
 adjustments = [
