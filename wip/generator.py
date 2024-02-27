@@ -1,4 +1,4 @@
-from csv_generators import staff, template, location, convert_time
+from csv_generators import staff, template, location, convert_time, TEMPLATE
 from datetime import *
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -34,6 +34,9 @@ class Schedule:
         self.get_hours_locations()
         self.create_header_compare()
         self.get_leave_and_programs()
+        
+        self.get_weekday()
+        
         self.add_to_schedule()
 
     def get_hours_locations(self):
@@ -169,9 +172,16 @@ class Schedule:
                 leave_string += "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "") + ": "
                 leave_string += ", ".join(info[0]) + "\n"
         for info in self.programs_print:
-            programs_string += "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "") + ": " + info[2]
+            programs_string += "-".join(info[1]).replace("am", "").replace("pm", "").replace(":00", "") + ": " + info[2] + " "
             programs_string += "(" + ", ".join(info[0]) + ")\n"
         self.print_info.add_row(["", "", leave_string + "\n" + programs_string])
+    
+    def get_weekday(self):
+        friday1a, friday1b, friday2a, friday2b, friday3a, friday3b, saturday1a, saturday1b, saturday2a, saturday2b, saturday3a, saturday3b, sunday1, sunday2, sunday3 = [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+    
+    def get_daily_hours(self):
+        hours = []
+        hours_string = ""
 
     def add_to_schedule(self):
         # Create list for all available location/hour slots
@@ -221,8 +231,8 @@ class Schedule:
         self.document.save(join(dirname(realpath(__file__)), "test.docx"))
 
 
-# date = "February 22, 2024"
-date = datetime.today().strftime("%B %d, %Y")
+date = "March 1, 2024"
+# date = datetime.today().strftime("%B %d, %Y")
 
 adjustments = [
     [
@@ -240,6 +250,6 @@ adjustments = [
 
 daily_schedule = Schedule(date, adjustments)
 
-daily_schedule.pretty_print()
+# daily_schedule.pretty_print()
 
 # daily_schedule.change_doc()
