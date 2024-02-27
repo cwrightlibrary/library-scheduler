@@ -33,12 +33,14 @@ class Schedule:
 
         self.get_hours_locations()
         self.create_header_compare()
-        self.get_leave_and_programs()
 
         self.get_weekday()
         self.get_daily_hours()
+        
+        self.get_leave_and_programs()
 
         self.add_to_schedule()
+        self.pretty_print()
 
     def get_hours_locations(self):
         # Loop through the imported location csv's info dictionary
@@ -186,7 +188,7 @@ class Schedule:
                 + " "
             )
             programs_string += "(" + ", ".join(info[0]) + ")\n"
-        self.print_info.add_row(["", "", leave_string + "\n" + programs_string])
+        self.print_info.add_row([self.hours_string, self.break_string, leave_string + "\n" + programs_string])
 
     def get_weekday(self):
         self.current_date = []
@@ -285,10 +287,26 @@ class Schedule:
                     self.current_date = ["sunday-hours", 2]
         if self.weekday.lower() not in ["friday", "saturday", "sunday"]:
             self.current_date = self.weekday.lower() + "-hours"
+            self.current_date_string = self.weekday.lower()
+        if isinstance(self.current_date, list):
+            if len(self.current_date) == 2:
+                if self.current_date[1] == 0: m1 = "1"
+                if self.current_date[1] == 1: m1 = "2"
+                if self.current_date[1] == 2: m1 = "3"
+                self.current_date_string = self.current_date[0].replace("-hours", "") + m1
+            else:
+                if self.current_date[1] == 0: m1 = "1"
+                if self.current_date[1] == 1: m1 = "2"
+                if self.current_date[1] == 2: m1 = "3"
+                if self.current_date[2] == 0: m2 = "a"
+                if self.current_date[2] == 1: m2 = "b"
+                self.current_date_string = self.current_date[0].replace("-hours", "") + m1 + m2
 
     def get_daily_hours(self):
         hours = []
-        hours_string = ""
+        combined_hours = []
+        self.hours_string = ""
+        self.break_string = ""
         for employee in staff:
             if self.weekday.lower() in ["friday", "saturday"]:
                 employee_hours = employee[self.current_date[0]][self.current_date[1]][
@@ -300,27 +318,85 @@ class Schedule:
                 employee_hours = employee[self.current_date]
             if employee_hours != "Off" and employee_hours not in hours:
                 hours.append(employee_hours)
-            for hour in hours:
-                if employee_hours[0] == hour[0] and employee_hours[1] == hour[1]:
-                    hour.append(employee["name"].split()[0])
+        hours = sorted(hours)
         for hour in hours:
-            hour[0] = (
-                convert_time(hour[0], to_24=False)
-                + "-"
-                + convert_time(hour[1], to_24=False)
-                + ":\n"
-            )
-            hour.pop(1)
-            for names in range(1, len(hour)):
-                emp_names = []
-                emp_names.append(hour[names])
-            hour[1] = emp_names
-            while len(hour) > 2:
-                hour.pop()
-            # TODO: create the hours_string
+            print_hours = [convert_time(hour[0], to_24=False) + "-" + convert_time(hour[1], to_24=False) + ":\n"]
+            names = []
+            for employee in staff:
+                if self.weekday.lower() in ["friday", "saturday"]:
+                    employee_hours = employee[self.current_date[0]][self.current_date[1]][
+                        self.current_date[2]
+                    ]
+                elif self.weekday.lower() == "sunday":
+                    employee_hours = employee[self.current_date[0]][self.current_date[1]]
+                else:
+                    employee_hours = employee[self.current_date]
+                if hour[0] == employee_hours[0] and hour[1] == employee_hours[1]:
+                    names.append(employee["name"].split()[0])
+            print_hours.append(names)
+            combined_hours.append(print_hours)
+        for hour in combined_hours:
+            self.hours_string += hour[0] + ", ".join(hour[1]) + "\n\n"
 
+        hours = []
+        combined_hours = []
+        for employee in staff:
+            if self.weekday.lower() in ["friday", "saturday"]:
+                employee_hours = employee[self.current_date[0]][self.current_date[1]][
+                    self.current_date[2]
+                ]
+                employee_break = employee[self.current_date[0].replace("hours", "break")][self.current_date[1]][
+                    self.current_date[2]
+                ]
+            elif self.weekday.lower() == "sunday":
+                employee_hours = employee[self.current_date[0]][self.current_date[1]]
+                employee_break = employee[self.current_date[0].replace("hours", "break")][self.current_date[1]]
+            else:
+                employee_hours = employee[self.current_date]
+                employee_break = employee[self.current_date.replace("hours", "break")]
+            if employee_hours != "Off" and int(employee_hours[1]) - int(employee_hours[0]) >= 600 and employee_break != "None":
+                break_hours = [employee_break[0], str(int(employee_break[0]) + 100)]
+                if break_hours not in hours:
+                    hours.append(break_hours)
+        hours = sorted(hours)
+        for hour in hours:
+            print_hours = [convert_time(hour[0], to_24=False) + "-" + convert_time(hour[1], to_24=False) + ":\n"]
+            names = []
+            for employee in staff:
+                if self.weekday.lower() in ["friday", "saturday"]:
+                    employee_hours = employee[self.current_date[0]][self.current_date[1]][
+                        self.current_date[2]
+                    ]
+                    employee_break = employee[self.current_date[0].replace("hours", "break")][self.current_date[1]][
+                        self.current_date[2]
+                    ]
+                elif self.weekday.lower() == "sunday":
+                    employee_hours = employee[self.current_date[0]][self.current_date[1]]
+                    employee_break = employee[self.current_date[0].replace("hours", "break")][self.current_date[1]]
+                else:
+                    employee_hours = employee[self.current_date]
+                    employee_break = employee[self.current_date.replace("hours", "break")]
+                if employee_hours != "Off" and int(employee_hours[1]) - int(employee_hours[0]) >= 600 and employee_break != "None":
+                    break_hours = [employee_break[0], str(int(employee_break[0]) + 100)]
+                elif employee_hours != "Off" and int(employee_hours[1]) - int(employee_hours[0]) < 600 and employee_break != "None":
+                    break_hours = [employee_break[0], str(int(employee_break[0]) + 30)]
+                if hour[0] == break_hours[0] and hour[1] == break_hours[1] and hour[0] == employee_break[0]:
+                    names.append(employee["name"].split()[0])
+            print_hours.append(names)
+            combined_hours.append(print_hours)
+        for hour in combined_hours:
+            self.break_string += hour[0] + ", ".join(hour[1]) + "\n\n"
+        
     def add_to_schedule(self):
         # Create list for all available location/hour slots
+        self.template = []
+        all_locs = [self.current_date_string + "PUW", self.current_date_string + "FL", self.current_date_string + "SP1a", self.current_date_string + "SP1b", self.current_date_string + "SP2a", self.current_date_string + "SP2b"]
+        
+        # for k, v in template.items():
+        #     if k in all_locs:
+        #         print(k, v)
+        
+        # TEMPORARY FOR FUNCTIONALITY
         self.template = []
         for loc in range(len(self.floor_locations)):
             temp = []
@@ -367,21 +443,30 @@ class Schedule:
         self.document.save(join(dirname(realpath(__file__)), "test.docx"))
 
 
-date = "March 01, 2024"
-# date = datetime.today().strftime("%B %d, %Y")
+# date = "March 01, 2024"
 
+# adjustments = [
+#     [
+#         # leave
+#         [["jess"], [0, 0]],
+#         [["sonaite"], ["12:00pm", "5:30pm"]],
+#     ],
+#     [
+#         # programs and meetings
+#         [["lea", "michelle"], ["9:15am", "10:15am"], "meeting"],
+#         [["lea"], ["2:00pm", "3:00pm"], "meeting"],
+#         [["rod"], ["6:00pm", "8:00pm"], "chess"],
+#     ],
+# ]
+
+date = datetime.today().strftime("%B %d, %Y")
 adjustments = [
     [
         # leave
-        [["jess"], [0, 0]],
-        [["sonaite"], ["12:00pm", "5:30pm"]],
     ],
     [
         # programs and meetings
-        [["lea", "michelle"], ["9:15am", "10:15am"], "meeting"],
-        [["lea"], ["2:00pm", "3:00pm"], "meeting"],
-        [["rod"], ["6:00pm", "8:00pm"], "chess"],
-    ],
+    ]
 ]
 
 daily_schedule = Schedule(date, adjustments)
