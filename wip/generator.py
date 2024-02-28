@@ -391,19 +391,56 @@ class Schedule:
         # Create list for all available location/hour slots
         self.template = []
         all_locs = [self.current_date_string + "PUW", self.current_date_string + "FL", self.current_date_string + "SP1a", self.current_date_string + "SP1b", self.current_date_string + "SP2a", self.current_date_string + "SP2b"]
+        name_locs = ["pickup window", "floor lead", "service point 1", "service point 1", "service point 2", "service point 2"]
         
-        # for k, v in template.items():
-        #     if k in all_locs:
-        #         print(k, v)
+        for k, v in template.items():
+            for loc in range(len(all_locs)):
+                if k == all_locs[loc]:
+                    temp = []
+                    temp.append(name_locs[loc])
+                    for name in v:
+                        if "/" in name:
+                            name = name.split("/")
+                            if "*" in name[0]:
+                                name_string = ""
+                                name[0] = name[0].split("*")
+                                # TODO If the name starts with *
+                                print(name[0])
+                                for employee in staff:
+                                    if employee["name-shorthand"] == name[0][0]:
+                                        name_string = employee["name"].split()[0] + " 'til " + name[0][1].replace("am", "").replace("pm", "")
+                                    if employee["name-shorthand"] == name[1]:
+                                        name = name_string + "\n" + employee["name"].split()[0]
+                            temp.append(name)
+                        else:
+                            if name == None or name == "" or name == "none":
+                                name = ""
+                                temp.append(name)
+                            else:
+                                for employee in staff:
+                                    if employee["name-shorthand"] == name:
+                                        if employee["leave"] != []:
+                                            idx = v.index(name)
+                                            if "all day" in employee["leave"]:
+                                                temp.append("")
+                                            else:
+                                                if not self.compare_hours(int(employee["leave"][0]), int(employee["leave"][1]), int(self.compare_time[idx][0]), int(self.compare_time[idx][1])):
+                                                    temp.append("")
+                                                else:
+                                                    temp.append(employee["name"].split()[0])
+                                        else:
+                                            temp.append(employee["name"].split()[0])
+                    print(temp)
+                    self.template.append(temp)
         
         # TEMPORARY FOR FUNCTIONALITY
-        self.template = []
-        for loc in range(len(self.floor_locations)):
-            temp = []
-            temp.append(self.floor_locations[loc])
-            for hour in range(len(self.template_header) - 1):
-                temp.append("")
-            self.template.append(temp)
+        # self.template = []
+        # for loc in range(len(self.floor_locations)):
+        #     temp = []
+        #     temp.append(self.floor_locations[loc])
+        #     for hour in range(len(self.template_header) - 1):
+        #         temp.append("")
+        #     self.template.append(temp)
 
         for row in range(len(self.template)):
             self.print_template.add_row(self.template[row], divider=True)
@@ -441,6 +478,12 @@ class Schedule:
         self.document.paragraphs[0].runs[0].font.color.rgb = black
 
         self.document.save(join(dirname(realpath(__file__)), "test.docx"))
+    
+    def compare_hours(self, hour1, hour2, comp1, comp2):
+        if ((hour1 >= comp1 and hour2 <= comp2)
+        or (hour1 < comp1 and hour2 >= comp2)
+        or (hour1 < comp1 and hour2 >= comp1 and hour2 <= comp2)):
+            return True
 
 
 # date = "March 01, 2024"
@@ -460,9 +503,10 @@ class Schedule:
 # ]
 
 date = datetime.today().strftime("%B %d, %Y")
+date = "March 01, 2024"
 adjustments = [
     [
-        # leave
+        [["cat"], [0, 0]], [["chris"], ["9:00am", "11:00pm"]]
     ],
     [
         # programs and meetings
@@ -470,7 +514,5 @@ adjustments = [
 ]
 
 daily_schedule = Schedule(date, adjustments)
-
-# daily_schedule.pretty_print()
 
 # daily_schedule.change_doc()
